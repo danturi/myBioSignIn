@@ -1,0 +1,98 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
+        <link rel="stylesheet" type="text/css" href="css/topcoat-mobile-dark.css" />
+        <title>PogoConnect Sketching</title>
+    </head>
+    <body>
+
+        <canvas id="canvas"></canvas>
+
+        <div id="output"></div>
+
+        <div id="options" class="hidden" >
+
+            <div id="optionsContent">
+
+                <h2>Commands</h2>
+
+                <button id="erase"  class="dark-button dark-cta">erase</button>
+                <button id="save"  class="dark-button dark-cta">save</button>
+
+                <h2>Thickness</h2>
+                <div id="thickness" class="track">
+                    <div id="minThickness" class="thumb min"></div>
+                    <div id="maxThickness" class="thumb"></div>
+                </div>
+
+                <h2>Opacity</h2>
+                <div id="opacity" class="track">
+                    <div id="minOpacity" class="thumb min"></div>
+                    <div id="maxOpacity" class="thumb"></div>
+                </div>
+
+                <div id="palletteContainer">
+                    <button id="black" class="pallette"></button>
+                    <button id="red" class="pallette"></button>
+                    <button id="orange" class="pallette"></button>
+                    <button id="yellow" class="pallette"></button>
+                    <button id="green" class="pallette"></button>
+                    <button id="blue" class="pallette"></button>
+                    <button id="purple" class="pallette"></button>
+                    <button id="white" class="pallette"></button>
+                </div>
+
+                <h2>Customize</h2>
+
+                <table>
+                    <tr>
+                        <td width="500px">
+                            <div id="rgb">
+
+                                <div id="penType">
+                                    <button id="circle" class="dark-button dark-cta">Circle</button>
+                                    <button id="triangle" class="dark-button dark-cta">Triangle</button>
+                                    <button id="caligraphic" class="dark-button dark-cta">Caligraphic</button>
+                                </div>
+                                <br/>
+
+                                <input type="range" class="dark-slider" id="inputR" value="0" min="0" max="255" step="1">
+                                <input type="range" class="dark-slider" id="inputG" value="0" min="0" max="255" step="1">
+                                <input type="range" class="dark-slider" id="inputB" value="0" min="0" max="255" step="1">
+
+
+                            </div>
+                        </td>
+                        <td width="100px">
+                            <h4>Pen Preview</h4>
+                            <canvas id="preview" width="100" height="100"></canvas>
+
+                        </td>
+                    </tr>
+                </table>
+
+
+
+
+
+            </div>
+
+
+            <button id="closeOptions" class="dark-button" >x</button>
+
+
+        </div>
+
+        <script type="text/javascript" src="cordova.js"></script>
+        <script type="text/javascript" src="js/raf.js"></script>
+        <script type="text/javascript" src="js/sketcher.js"></script>
+        <script type="text/javascript" src="js/trigonometry.js"></script>
+        <script type="text/javascript" src="js/index.js"></script>
+        <script type="text/javascript">
+            app.initialize();
+        </script>
+    </body>
+</html>

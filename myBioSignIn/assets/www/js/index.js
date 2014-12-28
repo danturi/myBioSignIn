@@ -50,18 +50,18 @@ var app = {
 	bindEvents : function() {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
 		document.addEventListener("ACTION_DOWN", function(event) {
-			event.x = event.x / window.devicePixelRatio;
-			event.y = event.y / window.devicePixelRatio;
+			var out = document.getElementById("output");
+			out.innerHTML = event.pressure;
 			signaturePad._handleTouchStart(event);
 		});
 		document.addEventListener("ACTION_MOVE", function(event) {
-			event.x = event.x / window.devicePixelRatio;
-			event.y = event.y / window.devicePixelRatio;
+			var out = document.getElementById("output");
+			out.innerHTML = event.pressure;
 			signaturePad._handleTouchMove(event);
 		});
 		document.addEventListener("ACTION_UP", function(event) {
-			event.x = event.x / window.devicePixelRatio;
-			event.y = event.y / window.devicePixelRatio;
+			var out = document.getElementById("output");
+			out.innerHTML = 0.0;
 			signaturePad._handleTouchEnd(event);
 		});
 	},
