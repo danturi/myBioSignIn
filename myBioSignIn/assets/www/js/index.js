@@ -1,68 +1,41 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
-var wrapper = document.getElementById("signature-pad"), clearButton = wrapper
-		.querySelector("[data-action=clear]"), saveButton = wrapper
-		.querySelector("[data-action=save]"), canvas = wrapper
-		.querySelector("canvas"), signaturePad;
-// Adjust canvas coordinate space taking into account pixel ratio,
-// to make it look crisp on mobile devices.
-// This also causes canvas to be cleared.
-function resizeCanvas() {
-	var ratio = window.devicePixelRatio || 1;
-	canvas.width = canvas.offsetWidth * ratio;
-	canvas.height = canvas.offsetHeight * ratio;
-	canvas.getContext("2d").scale(ratio, ratio);
-}
-window.onresize = resizeCanvas;
-resizeCanvas();
-signaturePad = new SignaturePad(canvas);
-clearButton.addEventListener("click", function(event) {
-	signaturePad.clear();
-});
-saveButton.addEventListener("click", function(event) {
-	if (signaturePad.isEmpty()) {
-		alert("Please provide signature first.");
-	} else {
-		window.open(signaturePad.toDataURL());
-	}
-});
+var canvas = document.getElementById("canvas");
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
+//signaturePad = new SignaturePad(canvas);
+signatureCapture = new SignatureCapture();
+
+
 var app = {
 	// Application Constructor
 	initialize : function() {
 		this.bindEvents();
 	},
 	bindEvents : function() {
+		var touch = document.getElementById("touch");
+		var clear_button = document.getElementById("control_clear");
+		touch.style["display"] = "block";
+		
+		
+		clear_button.addEventListener('click', this.clearSignature, false);
 		document.addEventListener('deviceready', this.onDeviceReady, false);
 		document.addEventListener("ACTION_DOWN", function(event) {
-			var out = document.getElementById("output");
-			out.innerHTML = event.pressure;
-			signaturePad._handleTouchStart(event);
+			event.preventDefault();
+			touch.innerHTML=event.pressure;
+			//signaturePad._handleTouchStart(event);
+			signatureCapture.down(event);
+			
 		});
 		document.addEventListener("ACTION_MOVE", function(event) {
-			var out = document.getElementById("output");
-			out.innerHTML = event.pressure;
-			signaturePad._handleTouchMove(event);
+			event.preventDefault();
+			touch.innerHTML = event.pressure;
+			//signaturePad._handleTouchMove(event);
+			signatureCapture.move(event);
 		});
 		document.addEventListener("ACTION_UP", function(event) {
-			var out = document.getElementById("output");
-			out.innerHTML = 0.0;
-			signaturePad._handleTouchEnd(event);
+			event.preventDefault();
+			touch.innerHTML = 0.0;
+			//signaturePad._handleTouchEnd(event);
+			signatureCapture.up(event);
 		});
 	},
 	onDeviceReady : function() {
@@ -72,6 +45,11 @@ var app = {
 		var myPlugin = cordova
 				.require('org.apache.cordova.plugin.SpenPlugin.SpenPlugin');
 		myPlugin.addEvents();
+		
+	},
+	clearSignature: function() {
+		//signaturePad.clear();
+		signatureCapture.clear();
 	}
 
 };

@@ -3,9 +3,9 @@ module.exports = [
     {
         "file": "plugins/org.apache.cordova.plugin.SpenPlugin/www/SpenPlugin.js",
         "id": "org.apache.cordova.plugin.SpenPlugin.SpenPlugin",
-       // "clobbers": [
-         //   "window.SpenPlugin"
-        //]
+        "clobbers": [
+           "window.SpenPlugin"
+        ]
     }
 ];
 module.exports.metadata = 

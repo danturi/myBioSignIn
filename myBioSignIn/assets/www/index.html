@@ -25,24 +25,22 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="stylesheet" type="text/css" href="css/signature-pad.css" />
+<link rel="stylesheet" type="text/css" href="css/index.css" />
 <title>Hello World</title>
 </head>
 <body>
-	<p id="output"></p>
-	<div id="signature-pad" class="m-signature-pad">
-		<div class="m-signature-pad--body">
-			<canvas></canvas>
-		</div>
-		<div class="m-signature-pad--footer">
-			<div class="description">Sign above</div>
-			<button class="button clear" data-action="clear">Clear</button>
-			<button class="button save" data-action="save">Save</button>
+<body>
+	<div id="touch"></div>
+	<div id="container">
+		<canvas id="canvas"></canvas>
+		<div id="controls">
+			<button id="control_clear">Clear</button>
+			<button id="control_save">Save</button>
 		</div>
 	</div>
 	<script type="text/javascript" src="cordova.js"></script>
-	<script src="js/signature_pad.js"></script>
+	<script src="js/signature.js"></script>
 	<script type="text/javascript" src="js/index.js"></script>
-	
+
 </body>
 </html>

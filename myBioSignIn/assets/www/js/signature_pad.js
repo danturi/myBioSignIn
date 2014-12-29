@@ -75,6 +75,7 @@ var SignaturePad = (function(document) {
 		if (!canDrawCurve && point) {
 			this._strokeDraw(point);
 		}
+		
 		if (typeof this.onEnd === 'function') {
 			this.onEnd(event);
 		}
@@ -82,22 +83,22 @@ var SignaturePad = (function(document) {
 
 	SignaturePad.prototype._handleTouchStart = function(event) {
 		var self = this;
-		event.x = event.x / window.devicePixelRatio;
-		event.y = event.y / window.devicePixelRatio;
+		event.x = Math.round(event.x / window.devicePixelRatio);
+		event.y = Math.round(event.y / window.devicePixelRatio);
 		self._strokeBegin(event);
 	};
 
 	SignaturePad.prototype._handleTouchMove = function(event) {
 		var self = this;
-		event.x = event.x / window.devicePixelRatio;
-		event.y = event.y / window.devicePixelRatio;
+		event.x = Math.round(event.x / window.devicePixelRatio);
+		event.y = Math.round(event.y / window.devicePixelRatio);
 		self._strokeUpdate(event);
 	};
 
 	SignaturePad.prototype._handleTouchEnd = function(event) {
 		var self = this;
-		event.x = event.x / window.devicePixelRatio;
-		event.y = event.y / window.devicePixelRatio;
+		event.x = Math.round(event.x / window.devicePixelRatio);
+		event.y = Math.round(event.y / window.devicePixelRatio);
 		self._strokeEnd(event);
 	};
 
@@ -115,7 +116,6 @@ var SignaturePad = (function(document) {
 		var rect = this._canvas.getBoundingClientRect();
 		return new Point(event.x - rect.left, event.y - rect.top,
 				event.pressure, event.time
-
 		);
 	};
 

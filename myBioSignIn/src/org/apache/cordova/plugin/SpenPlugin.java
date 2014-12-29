@@ -97,7 +97,7 @@ public class SpenPlugin extends CordovaPlugin implements View.OnTouchListener{
 		if (isPenEvent(e)) {
             pointerId = e.getPointerId(0);
             int action = e.getAction();
-
+            
             String actionStr;
 
             switch (action) {
