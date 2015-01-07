@@ -44,12 +44,14 @@ var SignatureCapture = (function (document) {
 		context.lineWidth = 1;
 		context.lineCap = "round";
 		context.fillRect(0, 0, canvas.width, canvas.height);
+		/*
 		context.fillStyle = "#3a87ad";
 		context.strokeStyle = "#3a87ad";
 		context.lineWidth = 1;
 		context.moveTo((canvas.width * 0.042), (canvas.height * 0.7));
 		context.lineTo((canvas.width * 0.958), (canvas.height * 0.7));
 		context.stroke();
+		*/
 		context.fillStyle = "rgba(0,0,0,0)";
 		context.strokeStyle = "#000000";
 		context.lineWidth = 2;
@@ -62,7 +64,6 @@ var SignatureCapture = (function (document) {
 	};
 
 	SignatureCapture.prototype.get_board_coords = function(e) {
-
 			return {
 				x : Math.round(e.x / window.devicePixelRatio),
 				y : Math.round(e.y / window.devicePixelRatio)
