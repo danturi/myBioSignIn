@@ -1,7 +1,7 @@
 /**
  * 
  */
-var value = new enums.Enum({
+var channelValue = new enums.Enum({
 	SHORT : {
 		min : -32768,
 		max : 32767,
@@ -12,82 +12,82 @@ var channel = new enums.Enum({
 	R : {
 		descr : "Rotation",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	E : {
 		descr : "Elevation",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	A : {
 		descr : "Azimuth",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	TY : {
 		descr : "TiltY",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	TX : {
 		descr : "TiltX",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	S : {
 		descr : "Tip Switch",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	F : {
 		descr : "Pressure",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	DT : {
 		descr : "Delta Time",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	T : {
 		descr : "Time",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	AY : {
 		descr : "AccelerationY",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	AX : {
 		descr : "AccelerationX",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	VY : {
 		descr : "VelocityY",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	VX : {
 		descr : "VelocityX",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	Z : {
 		descr : "CoordinateZ",
 		minValue : 0,
-		maxValue : (value.SHORT.max - value.SHORT.min),
+		maxValue : (channelValue.SHORT.max - channelValue.SHORT.min),
 	},
 	Y : {
 		descr : "CoordinateY",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 	X : {
 		descr : "CoordinateX",
-		minValue : value.SHORT.min,
-		maxValue : value.SHORT.max,
+		minValue : channelValue.SHORT.min,
+		maxValue : channelValue.SHORT.max,
 	},
 })
 
@@ -152,7 +152,7 @@ var ChannelAttributes = {
 		case 5:
 			return channelAttributes.MAXIMUM_CHANNEL_VALUE;
 		case 6:
-			return channelAttributes.MINIMUN_CHANNEL_VALUE;
+			return channelAttributes.MINIMUM_CHANNEL_VALUE;
 		case 7:
 			return channelAttributes.SCALING_VALUE;
 
@@ -221,21 +221,23 @@ ChannelDescription.prototype.toBytes = function() {
 	var viewPreamble = new DataView(buffer,0,1);
 	
 	var attributesPreamble = new Uint8Array(1);
+	var arrayAttributes = [];
 	for (var i = 7; i >= 0; i--) {
 		var attribute = ChannelAttributes.fromValues(i);
 		if(this.attributes.containsKey(attribute)){
 			attributesPreamble[0] = attributesPreamble[0] | (1 << i);
+			arrayAttributes.push(attribute);
 		}
 	}
 	viewPreamble.setUint8(0,attributesPreamble[0],false);
 	
-	var arrayKeys = this.attributes.keys();
-	var arrayLength = arrayKeys.length;
+	var arrayLength = arrayAttributes.length;
 	var value = new Uint16Array(1);
 	var cont = 1;
 	
 	for (var j =0 ; j < arrayLength; j++){
-		switch (arrayKeys[j]) {
+		var key = arrayAttributes[j];
+		switch (key) {
 		case channelAttributes.RESERVED_FUTURE_USE:
 		case channelAttributes.LINEAR_COMPONENT_REMOVED:
 			break;
@@ -244,12 +246,16 @@ ChannelDescription.prototype.toBytes = function() {
 		case channelAttributes.STANDARD_DEVIATION:
 			value[0] = this.attributes.get(key);
 			break;
-		case MAXIMUM_CHANNEL_VALUE:
-		case MINIMUM_CHANNEL_VALUE:
-		case MEAN_CHANNEL_VALUE:
+		case channelAttributes.MAXIMUM_CHANNEL_VALUE:
+			value[0] = this.attributes.get(key);
+			break;
+		case channelAttributes.MINIMUM_CHANNEL_VALUE:
+			value[0] = this.attributes.get(key);
+			break;
+		case channelAttributes.MEAN_CHANNEL_VALUE:
 			value[0] = this.attributes.get(key) - this.channel.minValue; 
 			break;
-		case SCALING_VALUE: {
+		case channelAttributes.SCALING_VALUE: {
 			//TODO da controllare 
 			var mantissa = Math.floor(Math.log(this.attributes.get(key)) / Math.log(2.0));
 			var fractorField =  (((this.attributes.get(key) / Math.pow(2.0,  mantissa)) - 1.0) * 2048.0);

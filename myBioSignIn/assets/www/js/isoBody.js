@@ -8,7 +8,7 @@ function IsoBody() {
 };
 
 function SignatureRepresentation() {
-	this.channels = new Hashtable();
+	this.channels = new Hashtable();  //Channel and ChannelDescription
 	this.points = [];
 	this.extendedData = false;
 	return this;
@@ -17,7 +17,7 @@ function SignatureRepresentation() {
 SignatureRepresentation.prototype.toBytes = function() {
 	
 	//SIGNATURE HEADER
-	var bufferHeader = new ArrayBuffer(20);
+	var bufferHeader = new ArrayBuffer(21);
 
 	var viewDateTime = new DataView(bufferHeader,4,9);
 	//TODO function date/time ISO
@@ -55,20 +55,22 @@ SignatureRepresentation.prototype.toBytes = function() {
 	for (var j = 15; j >= 0; j--){
 		if (this.channels.containsKey(Channel.fromInteger(j))){
 			var channelDescription = this.channels.get(Channel.fromInteger(j));
-			var bufferChannelDescr = channelDescription.toByte();
+			var bufferChannelDescr = channelDescription.toBytes();
 			tmpBufferChannel = _appendBuffer(tmpBufferChannel, bufferChannelDescr);
 		}
 	}
 	bufferHeader = tmpBufferChannel.slice(0);
 	
 	// Number of sample points (max 3 bytes)
-	var viewNumSamplePoints = new DataView(bufferHeader,bufferHeader.byteLength,3);
+	var bufferNumPoints = new ArrayBuffer(4);
+	var viewNumSamplePoints = new DataView(bufferNumPoints,0,4);
 	if(this.points.length <= Math.pow(2, 24) ){
 		viewNumSamplePoints.setUint32(0,this.points.length,false);
 	} else {
 		throw new Error("Number of sample points exception!")
 	}
-	
+	bufferNumPoints = bufferNumPoints.slice(1); //take only 3 of 4 bytes
+	bufferHeader=_appendBuffer(bufferHeader, bufferNumPoints);
 	
 	//SIGNATURE BODY
 	var numPoints = this.points.length;
@@ -85,7 +87,7 @@ SignatureRepresentation.prototype.toBytes = function() {
 	
 	
 	//union of all buffers
-	var buffer = _appendBuffer(bufferHeader, bufferHeader);
+	var buffer = bufferHeader;
 	buffer = _appendBuffer(buffer, bufferPoints);
 	buffer = _appendBuffer(buffer, bufferExtendedData);
 	

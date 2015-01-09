@@ -14,7 +14,7 @@ var IsoPoint = function() {
 	};
 
 
-IsoPoint.prototype.toByte = function() {
+IsoPoint.prototype.toBytes = function() {
 	
 	var bufferTmp = new ArrayBuffer(32);
 	var cont = 0;

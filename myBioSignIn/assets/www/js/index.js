@@ -59,12 +59,6 @@ var app = {
 		var isoHeader = new IsoHeader();
 		var bufferHeader = isoHeader.toBytes(1);
 		var view = new DataView(bufferHeader);
-		
-		console.log(Number(view.getUint32(0)).toString(16));
-		console.log(Number(view.getUint32(4)).toString(16));
-		console.log(Number(view.getUint32(8)).toString(16));
-		console.log(Number(view.getUint16(12)).toString(16));
-		console.log(Number(view.getUint8(14)).toString(16));
 	}
 
 };
