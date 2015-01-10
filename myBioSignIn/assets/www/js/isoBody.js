@@ -11,12 +11,12 @@ function SignatureRepresentation() {
 	this.channels = new Hashtable();  //Channel and ChannelDescription
 	this.points = [];
 	this.extendedData = false;
-	var lastPointTime = 0;
-	this.getLastPointTime = function() {
-		return lastPointTime;
+	var firstPointTime = 0;
+	this.getFirstPointTime = function() {
+		return firstPointTime;
 	}
-	this.setLastPointTime = function(time) {
-		lastPointTime = time;
+	this.setFirstPointTime = function(time) {
+		firstPointTime = time;
 	}
 	return this;
 };
@@ -107,7 +107,7 @@ SignatureRepresentation.prototype.toBytes = function() {
 SignatureRepresentation.prototype.clear = function() {
 	this.channels = new Hashtable();
 	this.points = [];
-	this.setLastPointTime(0);
+	this.setFirstPointTime(0);
 }
 
 SignatureRepresentation.prototype.initializeChannels = function() {
@@ -124,9 +124,10 @@ SignatureRepresentation.prototype.initializeChannels = function() {
 			0);
 	var channelDescrF = new ChannelDescription(channel.F);
 	channelDescrF.attributes
-			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 1);
+			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 65535);
 	channelDescrF.attributes
 			.put(channelAttributes.MINIMUM_CHANNEL_VALUE, 0);
+	channelDescrF.attributes.put(channelAttributes.SCALING_VALUE, 65535);
 	var channelDescrT = new ChannelDescription(channel.T);
 	// add channels
 	this.channels.put(channel.X, channelDescrX);

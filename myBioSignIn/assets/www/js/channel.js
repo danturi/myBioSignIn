@@ -256,7 +256,6 @@ ChannelDescription.prototype.toBytes = function() {
 			value[0] = this.attributes.get(key) - this.channel.minValue; 
 			break;
 		case channelAttributes.SCALING_VALUE: {
-			//TODO da controllare 
 			var mantissa = Math.floor(Math.log(this.attributes.get(key)) / Math.log(2.0));
 			var fractorField =  (((this.attributes.get(key) / Math.pow(2.0,  mantissa)) - 1.0) * 2048.0);
 			value[0] = (mantissa + 0x10) << 11;

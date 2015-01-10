@@ -1,14 +1,14 @@
-var canvas = document.getElementById("canvas");
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-// signaturePad = new SignaturePad(canvas);
-signatureCapture = new SignatureCapture();
-isoSignatureRep = new SignatureRepresentation();
-
-
-var app = {
+var app = {		
 	// Application Constructor
 	initialize : function() {
+		
+		this.canvas = document.getElementById("canvas");
+		this.canvas.width = window.innerWidth;
+		this.canvas.height = window.innerHeight;
+		
+		// signaturePad = new SignaturePad(canvas);
+		this.signatureCapture = new SignatureCapture();
+		this.isoSignatureRep = new SignatureRepresentation();
 		this.bindEvents();
 	},
 	bindEvents : function() {
@@ -20,27 +20,29 @@ var app = {
 		save_button.addEventListener('click', this.saveSignature, false);
 		clear_button.addEventListener('click', this.clearSignature, false);
 		document.addEventListener('deviceready', this.onDeviceReady, false);
+		
+		//Pen Events
 		document.addEventListener("ACTION_DOWN", function(event) {
 			event.preventDefault();
 			touch.innerHTML = event.pressure;
 			// signaturePad._handleTouchStart(event);
-			signatureCapture.down(event);
+			app.signatureCapture.down(event);
 			createPoint(event);
-			console.log(event.x);
+			console.log(event.pressure);
 
 		});
 		document.addEventListener("ACTION_MOVE", function(event) {
 			event.preventDefault();
 			touch.innerHTML = event.pressure;
 			// signaturePad._handleTouchMove(event);
-			signatureCapture.move(event);
+			app.signatureCapture.move(event);
 			createPoint(event);
 		});
 		document.addEventListener("ACTION_UP", function(event) {
 			event.preventDefault();
 			touch.innerHTML = 0.0;
 			// signaturePad._handleTouchEnd(event);
-			signatureCapture.up(event);
+			app.signatureCapture.up(event);
 		});
 	},
 	onDeviceReady : function() {
@@ -54,30 +56,32 @@ var app = {
 	},
 	clearSignature : function() {
 		// signaturePad.clear();
-		signatureCapture.clear();
-		isoSignatureRep.clear();
+		app.signatureCapture.clear();
+		app.isoSignatureRep.clear();
 	},
 	saveSignature : function() {
 		app.createIsoData();
-		
+
 	},
 	createIsoData : function() {
 		var isoHeader = new IsoHeader();
 		var isoBody = new IsoBody();
-		isoSignatureRep.initializeChannels();
-		isoBody.representations.push(isoSignatureRep);
+		app.isoSignatureRep.initializeChannels();
+		isoBody.representations.push(app.isoSignatureRep);
 
-		var bufferBody = isoSignatureRep.toBytes();
+		var bufferBody = app.isoSignatureRep.toBytes();
 		var bufferHeader = isoHeader.toBytes(bufferBody.byteLength);
-		var view = new DataView(bufferBody,38,2);
-		/*var points;
-		for (var i=0; i< isoSignatureRep.points.length; i++){
-			points = isoSignatureRep.points[i].properties.get(channel.X)+", ";
-		}
-		console.log(points);
-		*/
-		console.log(isoSignatureRep.points.length);
-		console.log(view.getUint16(0));
+		alert(app.isoSignatureRep.points.length);
+		/*
+		 * var view = new DataView(bufferBody,32,1);
+		 * console.log(Number(view.getUint8(0)).toString(2));
+		 * 
+		 * var points=""; for (var i=0; i< isoSignatureRep.points.length; i++){
+		 * points = points +
+		 * isoSignatureRep.points[i].properties.get(channel.T)+", "; }
+		 * console.log(points); /* console.log(isoSignatureRep.points.length);
+		 * console.log(view.getUint16(0));
+		 */
 	}
 
 };

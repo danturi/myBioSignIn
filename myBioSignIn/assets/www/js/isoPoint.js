@@ -42,11 +42,17 @@ function addIsoPoint(point) {
 	var isoPoint = new IsoPoint();
 	isoPoint.properties.put(channel.X,point.x);
 	isoPoint.properties.put(channel.Y,point.y);
-	isoPoint.properties.put(channel.F,point.pressure);
-	var lastTime = isoSignatureRep.getLastPointTime();
-	isoPoint.properties.put(channel.T,point.time - lastTime);
-	isoSignatureRep.points.push(isoPoint);
-	isoSignatureRep.setLastPointTime(point.time - lastTime);
+	
+	//TODO add scaling values for F and T
+	isoPoint.properties.put(channel.F,point.pressure*65535);
+	var firstTime = app.isoSignatureRep.getFirstPointTime();
+	if(firstTime == 0){
+		isoPoint.properties.put(channel.T,point.time);
+		app.isoSignatureRep.setFirstPointTime(point.time);
+	}else {
+		isoPoint.properties.put(channel.T,point.time - firstTime);
+	}
+	app.isoSignatureRep.points.push(isoPoint);
 };
 
 function createPoint(e) {
