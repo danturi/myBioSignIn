@@ -6,9 +6,9 @@ var Point = function(x, y, pressure, time) {
 	this.x = x;
 	this.y = y;
 	this.pressure = pressure;
-	this.time = time;
+	this.time = Math.round(time/1000);
 };
-
+	
 var IsoPoint = function() {
 	this.properties = new Hashtable();
 	};
@@ -23,11 +23,16 @@ IsoPoint.prototype.toBytes = function() {
 		if (!this.properties.containsKey(key)) {
 			continue;
 		}	
-		//TODO gestire eccezione channel.S -> 1 byte
-		
-		var value = new DataView(bufferTmp,cont,2);
-		value.setUint16(0,this.properties.get(key)- key.minValue,false);
-		cont = cont+2;
+		//channel.S has only 1 byte
+		if(key === channel.S){
+			var value = new DataView(bufferTmp,cont,1);
+			value.setUint8(0,this.properties.get(key)- key.minValue,false);
+			cont= cont+1;
+		}else {
+			var value = new DataView(bufferTmp,cont,2);
+			value.setUint16(0,this.properties.get(key)- key.minValue,false);
+			cont = cont+2;
+		}
 	}
 	
 	return bufferTmp.slice(0,cont);
@@ -38,9 +43,10 @@ function addIsoPoint(point) {
 	isoPoint.properties.put(channel.X,point.x);
 	isoPoint.properties.put(channel.Y,point.y);
 	isoPoint.properties.put(channel.F,point.pressure);
-	isoPoint.properties.put(channel.T,point.time);
-	//console.log(isoPoint.properties.entries());
+	var lastTime = isoSignatureRep.getLastPointTime();
+	isoPoint.properties.put(channel.T,point.time - lastTime);
 	isoSignatureRep.points.push(isoPoint);
+	isoSignatureRep.setLastPointTime(point.time - lastTime);
 };
 
 function createPoint(e) {

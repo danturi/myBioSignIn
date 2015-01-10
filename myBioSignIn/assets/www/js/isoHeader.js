@@ -68,6 +68,6 @@ IsoHeader.prototype.fromBytes = function(bytesIso, headerLength) {
 
 IsoHeader.prototype.toBytes = function(isoBodyLength) {
 	this.initialize();
-	this.viewRecordLength.setUint32(0,isoBodyLength,false);
+	this.viewRecordLength.setUint32(0,isoBodyLength+15,false);
     return this.buffer;
 };

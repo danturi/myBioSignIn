@@ -11,6 +11,13 @@ function SignatureRepresentation() {
 	this.channels = new Hashtable();  //Channel and ChannelDescription
 	this.points = [];
 	this.extendedData = false;
+	var lastPointTime = 0;
+	this.getLastPointTime = function() {
+		return lastPointTime;
+	}
+	this.setLastPointTime = function(time) {
+		lastPointTime = time;
+	}
 	return this;
 };
 
@@ -98,9 +105,35 @@ SignatureRepresentation.prototype.toBytes = function() {
 };
 
 SignatureRepresentation.prototype.clear = function() {
+	this.channels = new Hashtable();
 	this.points = [];
+	this.setLastPointTime(0);
 }
 
+SignatureRepresentation.prototype.initializeChannels = function() {
+	// create channel descriptions
+	var channelDescrX = new ChannelDescription(channel.X);
+	channelDescrX.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
+			window.innerHeight);
+	channelDescrX.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
+			0);
+	var channelDescrY = new ChannelDescription(channel.Y);
+	channelDescrY.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
+			window.innerWidth);
+	channelDescrY.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
+			0);
+	var channelDescrF = new ChannelDescription(channel.F);
+	channelDescrF.attributes
+			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 1);
+	channelDescrF.attributes
+			.put(channelAttributes.MINIMUM_CHANNEL_VALUE, 0);
+	var channelDescrT = new ChannelDescription(channel.T);
+	// add channels
+	this.channels.put(channel.X, channelDescrX);
+	this.channels.put(channel.Y, channelDescrY);
+	this.channels.put(channel.F, channelDescrF);
+	this.channels.put(channel.T, channelDescrT);
+};
 
 var _appendBuffer = function(buffer1, buffer2) {
 	  var tmp = new Uint8Array(buffer1.byteLength + buffer2.byteLength);

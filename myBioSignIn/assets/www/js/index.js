@@ -5,6 +5,7 @@ canvas.height = window.innerHeight;
 signatureCapture = new SignatureCapture();
 isoSignatureRep = new SignatureRepresentation();
 
+
 var app = {
 	// Application Constructor
 	initialize : function() {
@@ -25,6 +26,7 @@ var app = {
 			// signaturePad._handleTouchStart(event);
 			signatureCapture.down(event);
 			createPoint(event);
+			console.log(event.x);
 
 		});
 		document.addEventListener("ACTION_MOVE", function(event) {
@@ -56,30 +58,27 @@ var app = {
 		isoSignatureRep.clear();
 	},
 	saveSignature : function() {
+		app.createIsoData();
+		
+	},
+	createIsoData : function() {
 		var isoHeader = new IsoHeader();
-		var bufferHeader = isoHeader.toBytes(1);
-		var view = new DataView(bufferHeader);
+		var isoBody = new IsoBody();
+		isoSignatureRep.initializeChannels();
+		isoBody.representations.push(isoSignatureRep);
+
+		var bufferBody = isoSignatureRep.toBytes();
+		var bufferHeader = isoHeader.toBytes(bufferBody.byteLength);
+		var view = new DataView(bufferBody,38,2);
+		/*var points;
+		for (var i=0; i< isoSignatureRep.points.length; i++){
+			points = isoSignatureRep.points[i].properties.get(channel.X)+", ";
+		}
+		console.log(points);
+		*/
+		console.log(isoSignatureRep.points.length);
+		console.log(view.getUint16(0));
 	}
 
 };
-
-function ArrayBufferToString(buffer) {
-	return BinaryToString(String.fromCharCode.apply(null, Array.prototype.slice
-			.apply(new Uint8Array(buffer))));
-}
-
-function BinaryToString(binary) {
-	var error;
-
-	try {
-		return decodeURIComponent(escape(binary));
-	} catch (_error) {
-		error = _error;
-		if (error instanceof URIError) {
-			return binary;
-		} else {
-			throw error;
-		}
-	}
-}
 app.initialize();

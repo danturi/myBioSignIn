@@ -40,7 +40,7 @@ module("TEST SIGNATURE", {
 		isoPoint.properties.put(channel.X, 1200);
 		isoPoint.properties.put(channel.Y, 2100);
 		isoPoint.properties.put(channel.F, 1);
-		isoPoint.properties.put(channel.T, 12);
+		isoPoint.properties.put(channel.T, 1200);
 		// add point
 		isoSignRep.points.push(isoPoint);
 		// create channel descriptions
@@ -106,7 +106,7 @@ test("Test iso signature bytes", function() {
 	var view = new DataView(bufferPoint, 2, 2);
 	equal(view.getUint16(0),2100 - channelValue.SHORT.min,"The channel.Y value is: 34868");
 	var view = new DataView(bufferPoint, 4, 2);
-	equal(view.getUint16(0),12,"The channel.T value is: 12");
+	equal(view.getUint16(0),1200,"The channel.T value is: 1200");
 	var view = new DataView(bufferPoint, 6, 2);
 	equal(view.getUint16(0),1,"The channel.F value is: 1");
 });
