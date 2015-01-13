@@ -168,23 +168,26 @@ function ChannelDescription(channel) {
 	return this;
 }
 
-// TODO sistemare operatori logici
-ChannelDescription.prototype.fromBytes = function(channel, bytesIso, offset,
-		channelLength) {
-	if (bytesIso == null) {
+
+ChannelDescription.prototype.fromBytes = function(bytesIso,channel) {
+	if (!bytesIso) {
 		throw new Error("byteIso is null");
 	}
-	var attributesInclusion = bytesIso[offset];
+	var channelDescr = new ChannelDescription(channel);
+	
+	var viewPreamble = new DataView(bytesIso,0,1);
+	var attributesPreamble = viewPreamble.getUint8(0);
+	var valueFromBytes = new Uint16Array(1);
 	var length = 1;
-	var attributes = {};
 	for (var i = 7; i >= 0; i--) {
-		if ((attributesInclusion & (1 << i)) == 0) {
+		if ((attributesPreamble & (1 << i)) == 0) {
 			continue;
 		}
 		var attribute = ChannelAttributes.fromValues(i);
-		var valueFromBytes = (bytesIso[offset + length] << 8) & 0xFF00
-				| (bytesIso[offset + length + 1] & 0xFF);
-		var realValue = 0.0;
+		var viewAttribute = new DataView(bytesIso,length,2);
+		var valueFromBytes = viewAttribute.getUint16(0);
+		var realValue = new Uint16Array(1);
+		
 		switch (attribute) {
 		case channelAttributes.RESERVED_FUTURE_USE:
 		case channelAttributes.LINEAR_COMPONENT_REMOVED:
@@ -196,7 +199,7 @@ ChannelDescription.prototype.fromBytes = function(channel, bytesIso, offset,
 		case channelAttributes.MEAN_CHANNEL_VALUE:
 		case channelAttributes.MAXIMUM_CHANNEL_VALUE:
 		case channelAttributes.MINIMUM_CHANNEL_VALUE:
-			realValue = valueFromBytes + channel.getMinValue();
+			realValue = valueFromBytes + channel.minValue;
 			break;
 		case channelAttributes.SCALING_VALUE: {
 			var exponent = ((0xf800 & valueFromBytes) >> 11) - 0x10;
@@ -209,10 +212,10 @@ ChannelDescription.prototype.fromBytes = function(channel, bytesIso, offset,
 			throw new Error("not handle attribute exception");
 		}
 		length += 2;
-		attributes[attribute.name] = realValue;
+		channelDescr.attributes.put(attribute,realValue);
 	}
-	return new ChannelDescription(channel, length, attributes);
-}
+	return channelDescr;
+};
 
 
 ChannelDescription.prototype.toBytes = function() {

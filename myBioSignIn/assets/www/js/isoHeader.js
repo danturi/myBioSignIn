@@ -23,46 +23,32 @@ IsoHeader.prototype.initialize = function (){
 	this.viewCertificationFlag.setUint8(0,0,false);
 }
 
-IsoHeader.prototype.fromBytes = function(bytesIso, headerLength) {
-	if (bytesIso == null) {
+IsoHeader.prototype.fromBytes = function(bytesIso) {
+	if (!bytesIso) {
 		throw new Error("byteIso is null");
 	}
-	var lengthIdent = formatIdentifier.length;
-	var lengthVersion = versionNumber.length;
-	
-	if (bytesIso.length < (lengthIdent + lengthVersion)) {
-		throw new Error(
-		"Invalid length for iso header. Must be at least equal to format identifier more version number");
-	}
-	
-	for (var i = 0; i < lengthIdent; i++) {
-		if (formatIdentifier[i] != bytesIso[i]) {
-			throw new Error("Unexpected format identifier");
-		}
-	}
-	
-	for (var j = 0; j < lengthVersion; j++) {
-		if (versionNumber[j] != bytesIso[j + lengthIdent]) {
-			throw new Error("Unexpected version number");
-		}
-	}
-
-	var length = lengthIdent + lengthVersion;
-	var channelsInclusion = (bytesIso[length] << 8) & 0xFF00 | (bytesIso[length + 1] & 0xFF);
-	length += 2;
 	var isoHeader = new IsoHeader();
-	for (var k = 15; k >= 0; k--) {
-		if ((channelsInclusion & (1 << k)) != 0) {
-			var channelLength = 0;
-			var channel = Channel.fromInteger(k);
-			var description = ChannelDescription.FromBytes(channel, bytesIso, length, channelLength);
-			length += description.length;
-			isoHeader.channels.push(description);
-		}
+	var bytesFormatId = new DataView(bytesIso,0,4); 
+	if (!bytesFormatId.getUint32(0) == 0x53444900){
+		throw new Error("Unexpected format identifier");
 	}
-	isoHeader.reserved[0] = bytesIso[length];
-	length++;
-	isoHeader.length = length;
+	isoHeader.viewFormatId.setUint32(0,bytesFormatId.getUint32(0),false);
+	
+	var bytesVersionId = new DataView(bytesIso,4,4); 
+	if (!bytesVersionId.getUint32(0) == 0x30323000){
+		throw new Error("Unexpected version number");
+	}
+	isoHeader.viewVersionId.setUint32(0,bytesVersionId.getUint32(0),false);
+
+	var bytesRecordLength = new DataView(bytesIso,8,4);
+	isoHeader.viewRecordLength.setUint32(0,bytesRecordLength.getUint32(0),false);
+	
+	var bytesNumRep = new DataView(bytesIso,12,2);
+	isoHeader.viewNumRepresentations.setUint16(0,bytesNumRep.getUint16(0),false);
+	
+	var bytesCertifFlag = new DataView(bytesIso,14,1);
+	isoHeader.viewCertificationFlag.setUint8(0,bytesCertifFlag.getUint8(0),false);
+	
 	return isoHeader;
 };
 

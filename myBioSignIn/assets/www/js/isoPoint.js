@@ -13,7 +13,11 @@ var IsoPoint = function() {
 	this.properties = new Hashtable();
 	};
 
-
+var scaling = {
+		X: 100,
+		Y: 100,
+		F: 65535	
+}
 IsoPoint.prototype.toBytes = function() {
 	
 	var bufferTmp = new ArrayBuffer(32);
@@ -38,13 +42,38 @@ IsoPoint.prototype.toBytes = function() {
 	return bufferTmp.slice(0,cont);
 }
 
+IsoPoint.prototype.fromBytes = function (bytesIso,signRep) {
+	if (!bytesIso) {
+		throw new Error("byteIso is null");
+	}
+	var isoPoint = new IsoPoint();
+	var cont = 0;
+	for (var i = 15; i >= 0; i--) {
+		var key = Channel.fromInteger(i);
+		if (!signRep.channels.containsKey(key)) {
+			continue;
+		}
+		if(key === channel.S){
+			var view = new DataView(bytesIso,cont,1);
+			isoPoint.properties.put(key,view.getUint8(0)+key.minValue);
+			cont = cont+1;
+		}
+		var view = new DataView(bytesIso,cont,2);
+		isoPoint.properties.put(key,view.getUint16(0)+key.minValue);
+		cont = cont+2;
+	}
+	return isoPoint;
+};
+
+
 function addIsoPoint(point) {
 	var isoPoint = new IsoPoint();
-	isoPoint.properties.put(channel.X,point.x);
-	isoPoint.properties.put(channel.Y,point.y);
+	//  11.7 pixels/mm
+	isoPoint.properties.put(Math.round(channel.X,point.x / 11.7 * scaling.X));
+	isoPoint.properties.put(Math.round(channel.Y,point.y / 11.7 * scaling.Y));
 	
-	//TODO add scaling values for F and T
-	isoPoint.properties.put(channel.F,point.pressure*65535);
+	//TODO add scaling values for T
+	isoPoint.properties.put(Math.round(channel.F,point.pressure*scaling.F));
 	var firstTime = app.isoSignatureRep.getFirstPointTime();
 	if(firstTime == 0){
 		isoPoint.properties.put(channel.T,point.time);

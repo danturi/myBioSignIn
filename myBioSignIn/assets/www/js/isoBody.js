@@ -103,6 +103,10 @@ SignatureRepresentation.prototype.toBytes = function() {
 	viewLengthRep.setUint32(0,buffer.byteLength,false);
 	return buffer;
 };
+//TODO
+SignatureRepresentation.prototype.fromBytes = function() {
+	
+};
 
 SignatureRepresentation.prototype.clear = function() {
 	this.channels = new Hashtable();
@@ -114,14 +118,16 @@ SignatureRepresentation.prototype.initializeChannels = function() {
 	// create channel descriptions
 	var channelDescrX = new ChannelDescription(channel.X);
 	channelDescrX.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
-			window.innerHeight);
+			Math.round(2560/11.7*100));
 	channelDescrX.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
 			0);
+	channelDescrX.atttributes.put(channelAttributes.SCALING_VALUE,100);
 	var channelDescrY = new ChannelDescription(channel.Y);
 	channelDescrY.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
-			window.innerWidth);
+			Math.round(1600/11.7*100));
 	channelDescrY.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
 			0);
+	channelDescrY.atttributes.put(channelAttributes.SCALING_VALUE,100);
 	var channelDescrF = new ChannelDescription(channel.F);
 	channelDescrF.attributes
 			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 65535);

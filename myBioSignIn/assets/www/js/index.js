@@ -28,7 +28,6 @@ var app = {
 			// signaturePad._handleTouchStart(event);
 			app.signatureCapture.down(event);
 			createPoint(event);
-			console.log(event.pressure);
 
 		});
 		document.addEventListener("ACTION_MOVE", function(event) {
@@ -71,11 +70,12 @@ var app = {
 
 		var bufferBody = app.isoSignatureRep.toBytes();
 		var bufferHeader = isoHeader.toBytes(bufferBody.byteLength);
-		alert(app.isoSignatureRep.points.length);
-		/*
-		 * var view = new DataView(bufferBody,32,1);
-		 * console.log(Number(view.getUint8(0)).toString(2));
-		 * 
+		//alert(app.isoSignatureRep.points.length);
+		
+		 var view = new DataView(bufferBody,42,2);
+		 console.log(view.getUint16(0));
+		 
+		 /* 
 		 * var points=""; for (var i=0; i< isoSignatureRep.points.length; i++){
 		 * points = points +
 		 * isoSignatureRep.points[i].properties.get(channel.T)+", "; }
