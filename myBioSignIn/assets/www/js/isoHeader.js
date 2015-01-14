@@ -27,7 +27,7 @@ IsoHeader.prototype.fromBytes = function(bytesIso) {
 	if (!bytesIso) {
 		throw new Error("byteIso is null");
 	}
-	var isoHeader = new IsoHeader();
+	var isoHeader = this;
 	var bytesFormatId = new DataView(bytesIso,0,4); 
 	if (!bytesFormatId.getUint32(0) == 0x53444900){
 		throw new Error("Unexpected format identifier");

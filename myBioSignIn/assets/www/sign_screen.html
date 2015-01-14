@@ -25,24 +25,28 @@
 <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
 <meta name="viewport"
 	content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
-<link rel="stylesheet" type="text/css" href="css/index.css" />
+<link rel="stylesheet" type="text/css" href="css/sign_screen.css" />
 <title>Signature</title>
 </head>
 <body>
-<body class="android">
-	<header>
-		<div id="logo"></div>
-		<h1>myBioSignIn</h1>
-		<button class="back"></button>
-		<button class="next"></button>
-	</header>
+<body>
+	<div id="touch"></div>
 	<div id="container">
-		<canvas id="the-canvas"></canvas>
+		<canvas id="canvas"></canvas>
+		<div id="controls">
+			<button id="control_clear">Clear</button>
+			<button id="control_save">Save</button>
+		</div>
 	</div>
 	<script type="text/javascript" src="cordova.js"></script>
-	<script type="text/javascript" src="js/utility/pdf.js"></script>
-	<script type="text/javascript" src="js/utility/hammer.min.js"></script>
-	<script type="text/javascript" src="js/index.js"></script>
+	<script type="text/javascript" src="js/utility/enums.js"></script>
+	<script type="text/javascript" src="js/utility/hashtable.js"></script>
+	<script type="text/javascript" src="js/channel.js"></script>
+	<script type="text/javascript" src="js/isoHeader.js"></script>
+	<script type="text/javascript" src="js/isoBody.js"></script>
+	<script src="js/isoPoint.js"></script>
+	<script src="js/signature.js"></script>
+	<script type="text/javascript" src="js/biosignin.js"></script>
 
 </body>
 </html>

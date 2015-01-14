@@ -46,7 +46,7 @@ IsoPoint.prototype.fromBytes = function (bytesIso,signRep) {
 	if (!bytesIso) {
 		throw new Error("byteIso is null");
 	}
-	var isoPoint = new IsoPoint();
+	var isoPoint = this;
 	var cont = 0;
 	for (var i = 15; i >= 0; i--) {
 		var key = Channel.fromInteger(i);
@@ -69,11 +69,11 @@ IsoPoint.prototype.fromBytes = function (bytesIso,signRep) {
 function addIsoPoint(point) {
 	var isoPoint = new IsoPoint();
 	//  11.7 pixels/mm
-	isoPoint.properties.put(Math.round(channel.X,point.x / 11.7 * scaling.X));
-	isoPoint.properties.put(Math.round(channel.Y,point.y / 11.7 * scaling.Y));
+	isoPoint.properties.put(channel.X,Math.round(point.x / 11.7 * scaling.X));
+	isoPoint.properties.put(channel.Y,Math.round(point.y / 11.7 * scaling.Y));
 	
 	//TODO add scaling values for T
-	isoPoint.properties.put(Math.round(channel.F,point.pressure*scaling.F));
+	isoPoint.properties.put(channel.F,Math.round(point.pressure*scaling.F));
 	var firstTime = app.isoSignatureRep.getFirstPointTime();
 	if(firstTime == 0){
 		isoPoint.properties.put(channel.T,point.time);

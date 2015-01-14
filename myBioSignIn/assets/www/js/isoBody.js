@@ -18,6 +18,8 @@ function SignatureRepresentation() {
 	this.setFirstPointTime = function(time) {
 		firstPointTime = time;
 	}
+	this.DateTimeCapture=new Date();
+	this.length=0;
 	return this;
 };
 
@@ -101,11 +103,75 @@ SignatureRepresentation.prototype.toBytes = function() {
 	//set signature representation length
 	var viewLengthRep = new DataView(buffer,0,4);
 	viewLengthRep.setUint32(0,buffer.byteLength,false);
+	this.length = buffer.byteLength;
 	return buffer;
 };
-//TODO
-SignatureRepresentation.prototype.fromBytes = function() {
+
+SignatureRepresentation.prototype.fromBytes = function(bytesIso) {
+	var bytesIso = bytesIso;
 	
+	var view = new DataView(bytesIso,0,4);
+	this.length = view.getUint32(0);
+	
+	view = new DataView(bytesIso,4,9);
+	//TODO Date ISO
+	
+	view = new DataView(bytesIso,13,1);
+	if(!view.getUint8(0) == 0x01){
+		throw Error("Error different device tech id");
+	}
+	
+	view = new DataView(bytesIso,14,2);
+	if(!view.getUint16(0) == 0){
+		throw Error("Error different device vendor id");
+	}
+	
+	view = new DataView(bytesIso,16,2);
+	if(!view.getUint16(0) == 0){
+		throw Error("Error different device type id");
+	}
+	
+	view = new DataView(bytesIso,18,1);
+	if(!view.getUint8(0) == 0){
+		throw Error("There is quality block!");
+	}
+	
+	//Get ChannelDescriptions
+	view = new DataView(bytesIso,19,2);
+	var channelsInclusion = new Uint16Array(1);
+	channelsInclusion[0] = view.getUint16(0);
+	var length = 21;
+	for (var k = 15; k >= 0; k--) {
+		if ((channelsInclusion[0] & (1 << k)) != 0) {
+			var channel = Channel.fromInteger(k);
+			var description = new ChannelDescription(channel);
+			bytesIso = bytesIso.slice(length);
+			description = description.fromBytes(bytesIso);
+			length = description.length;
+			this.channels.put(channel,description);
+		}
+	}
+	bytesIso = bytesIso.slice(length);
+	view = new DataView(bytesIso,0,4);
+	var numOfPoints = view.getUint32(0) >> 8;
+	
+	bytesIso = bytesIso.slice(3);
+	//Get Points
+	for(var i = 0; i< numOfPoints;i++){
+		var isoPoint = new IsoPoint();
+		isoPoint = isoPoint.fromBytes(bytesIso, this);
+		this.points.push(isoPoint);
+		bytesIso = bytesIso.slice(this.channels.size()*2);
+	}
+	
+	//Extended Data
+	view = new DataView(bytesIso,0,2);
+	if( view.getUint16(0) != 0){
+		console.log(Number(view.getUint16(0).toString(2)));
+		throw new Error("There is extended data!");
+	}
+	
+	return this;
 };
 
 SignatureRepresentation.prototype.clear = function() {
@@ -121,13 +187,13 @@ SignatureRepresentation.prototype.initializeChannels = function() {
 			Math.round(2560/11.7*100));
 	channelDescrX.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
 			0);
-	channelDescrX.atttributes.put(channelAttributes.SCALING_VALUE,100);
+	channelDescrX.attributes.put(channelAttributes.SCALING_VALUE,100);
 	var channelDescrY = new ChannelDescription(channel.Y);
 	channelDescrY.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
 			Math.round(1600/11.7*100));
 	channelDescrY.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
 			0);
-	channelDescrY.atttributes.put(channelAttributes.SCALING_VALUE,100);
+	channelDescrY.attributes.put(channelAttributes.SCALING_VALUE,100);
 	var channelDescrF = new ChannelDescription(channel.F);
 	channelDescrF.attributes
 			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 65535);

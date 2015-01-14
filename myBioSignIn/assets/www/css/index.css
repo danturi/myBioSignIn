@@ -1,62 +1,106 @@
-/*
- * Licensed to the Apache Software Foundation (ASF) under one
- * or more contributor license agreements.  See the NOTICE file
- * distributed with this work for additional information
- * regarding copyright ownership.  The ASF licenses this file
- * to you under the Apache License, Version 2.0 (the
- * "License"); you may not use this file except in compliance
- * with the License.  You may obtain a copy of the License at
- *
- * http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing,
- * software distributed under the License is distributed on an
- * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
- * KIND, either express or implied.  See the License for the
- * specific language governing permissions and limitations
- * under the License.
- */
 * {
-	-webkit-tap-highlight-color: rgba(0, 0, 0, 0);
-	/* make transparent link selection, adjust last value opacity 0 to 1.0 */
+    margin: 0;
+    padding: 0;
+    border: 0;
+
+    -webkit-box-sizing: border-box;
+       -moz-box-sizing: border-box;
+            box-sizing: border-box;
 }
 
-body {
-	-webkit-touch-callout: none;
-	/* prevent callout to copy image, etc when tap to hold */
-	-webkit-text-size-adjust: none;
-	/* prevent webkit from resizing text to fit */
-	-webkit-user-select: none;
-	/* prevent copy paste, to allow, change 'none' to 'text' */
-	padding: 0px;
-	margin: 0px;
-	max-height: 768px;
+html {
+    background-color: #eee;
+    -webkit-tap-highlight-color: rgba(0,0,0,0);
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
 }
 
-#controls {
-    left: 50%;
-	bottom: 20px;
-  	position: absolute;
-    margin-left: -50px;
-    width: 200px;
-    height: 30px;
-    border: thin;
-}
-#control_clear,#control_save {
-    height:100%;
+header {
+    position: fixed;
+    margin: 0 auto 0;
+    width: 100%;
+    height: 44px;
+    line-height: 44px;
 }
 
-#touch {
-	position: absolute;
-	font-size: 30px;
+header div {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 44px;
+    font-size: inherit;
+    color: inherit;
+    background: none;
+    cursor: pointer;
+    outline: 0;
 }
 
-#canvas {
-	background: #FFF;
-	display:block;
+header h1 {
+    line-height: inherit;
+    font-size: inherit;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    font-weight: normal;
 }
 
-.hidden {
-	display: none;
-	visibility: hidden;
+/* ANDROID STYLES */
+.android header {
+    font-family: 'RobotoRegular', 'Droid Sans', Arial, sans-serif;
+    background-color: #f7f7f7;
+    padding: 0 60px;
+    border-bottom: 2px solid #ddd;
+}
+
+.android header div#logo {
+    padding-left: 30px;
+    width: 54px;
+    background: url(http://cdn.flaticon.com/png/256/1180.png) no-repeat 15px 4px;
+    background-size: 36px 36px;
+    text-indent: -8000px;
+}
+
+
+.android header button{
+    content: '';
+    position: absolute;
+    margin-top: -10px;
+    width: 20px;
+    height: 26px;
+    border: none;
+}
+.android header button.back{
+	 background: url(https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-arrow-back-128.png) no-repeat -2px 0;
+	 background-size: 20px 26px;
+	 opacity: 0.2;
+	 top: 50%;
+     left: 40%;
+}
+.android header button.next{
+	background: url(https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-arrow-back-128.png) no-repeat -2px 0;
+	-ms-transform: rotate(180deg); /* IE 9 */
+    -webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
+	transform: rotate(180deg);
+	background-size: 20px 26px;
+	opacity: 0.2;
+	top: 50%;
+    left: 60%;
+}
+.android header h1 {
+    font-size: 19px;
+    color: #444;
+}
+
+
+#container {
+	padding-top: 44px;
+}
+
+#the-canvas {
+	display: block;
+	margin: 0 auto 0 auto;
 }

@@ -165,22 +165,24 @@ var ChannelAttributes = {
 function ChannelDescription(channel) {
 	this.channel = channel;
 	this.attributes = new Hashtable();
+	this.length = 0;
 	return this;
 }
 
 
-ChannelDescription.prototype.fromBytes = function(bytesIso,channel) {
+ChannelDescription.prototype.fromBytes = function(bytesIso) {
 	if (!bytesIso) {
 		throw new Error("byteIso is null");
 	}
-	var channelDescr = new ChannelDescription(channel);
+	var channelDescr = this;
 	
 	var viewPreamble = new DataView(bytesIso,0,1);
-	var attributesPreamble = viewPreamble.getUint8(0);
+	var attributesPreamble = new Uint8Array(1);
+	attributesPreamble[0] = viewPreamble.getUint8(0);
 	var valueFromBytes = new Uint16Array(1);
 	var length = 1;
 	for (var i = 7; i >= 0; i--) {
-		if ((attributesPreamble & (1 << i)) == 0) {
+		if ((attributesPreamble[0] & (1 << i)) == 0) {
 			continue;
 		}
 		var attribute = ChannelAttributes.fromValues(i);
@@ -194,26 +196,29 @@ ChannelDescription.prototype.fromBytes = function(bytesIso,channel) {
 			break;
 		case channelAttributes.CONSTANT:
 		case channelAttributes.STANDARD_DEVIATION:
-			realValue = valueFromBytes;
+			realValue[0] = valueFromBytes;
 			continue;
 		case channelAttributes.MEAN_CHANNEL_VALUE:
 		case channelAttributes.MAXIMUM_CHANNEL_VALUE:
+			realValue[0] = valueFromBytes;
+			break;
 		case channelAttributes.MINIMUM_CHANNEL_VALUE:
-			realValue = valueFromBytes + channel.minValue;
+			realValue[0] = valueFromBytes;
 			break;
 		case channelAttributes.SCALING_VALUE: {
 			var exponent = ((0xf800 & valueFromBytes) >> 11) - 0x10;
 			var fractionField = 0x7ff & valueFromBytes;
 			var mantissa = 1.0 + (fractionField / Math.pow(2.0, 11.0));
-			realValue = mantissa * Math.pow(2.0, exponent);
+			realValue[0] = mantissa * Math.pow(2.0, exponent);
 			break;
 		}
 		default:
 			throw new Error("not handle attribute exception");
 		}
 		length += 2;
-		channelDescr.attributes.put(attribute,realValue);
+		channelDescr.attributes.put(attribute,realValue[0]);
 	}
+	this.length = length;
 	return channelDescr;
 };
 
