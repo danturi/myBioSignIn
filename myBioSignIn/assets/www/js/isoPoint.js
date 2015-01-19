@@ -74,14 +74,14 @@ function addIsoPoint(point) {
 	
 	//TODO add scaling values for T
 	isoPoint.properties.put(channel.F,Math.round(point.pressure*scaling.F));
-	var firstTime = app.isoSignatureRep.getFirstPointTime();
+	var firstTime = biosignin.isoSignatureRep.getFirstPointTime();
 	if(firstTime == 0){
 		isoPoint.properties.put(channel.T,point.time);
-		app.isoSignatureRep.setFirstPointTime(point.time);
+		biosignin.isoSignatureRep.setFirstPointTime(point.time);
 	}else {
 		isoPoint.properties.put(channel.T,point.time - firstTime);
 	}
-	app.isoSignatureRep.points.push(isoPoint);
+	biosignin.isoSignatureRep.points.push(isoPoint);
 };
 
 function createPoint(e) {

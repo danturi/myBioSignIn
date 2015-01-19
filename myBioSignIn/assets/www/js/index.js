@@ -5,6 +5,11 @@ var app = {
 		this.file = null;
 		this.pages = 0;
 		this.cont = 1;
+		this.sha256 = null;
+	},
+	signature : {
+		heigth : 0,
+		width : 0
 	},
 	bindEvents : function() {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
@@ -21,6 +26,13 @@ var app = {
 
 			app.pages = pdf.numPages;
 
+			// Retrieve sha256 of pdf file
+			pdf.getData().then(function(arrayBuffer) {
+				var pdfraw = String.fromCharCode.apply(null, arrayBuffer);
+				var md = forge.md.sha256.create();
+				md.update(pdfraw);
+				app.sha256 = md.digest().toHex();
+			});
 			// Using promise to fetch the page
 			pdf.getPage(num).then(function(page) {
 				var scale = 1.5;
@@ -104,7 +116,9 @@ var app = {
 		this.hammerIt(signRect);
 	},
 	hammerIt : function(elm) {
-		hammertime = new Hammer(elm,{preventDefault: true});
+		hammertime = new Hammer(elm, {
+			preventDefault : true
+		});
 		hammertime.get('pinch').set({
 			enable : true
 		});
@@ -112,72 +126,77 @@ var app = {
 		var posX = 0, posY = 0, scale = 1, last_scale = 1, last_posX = 0, last_posY = 0, max_pos_x = 0, max_pos_y = 0, transform = "", el = elm;
 		var canvas = document.getElementById('the-canvas');
 		var bc = canvas.getBoundingClientRect();
-		
+
 		hammertime.on('press', function() {
 			var rect = document.getElementById("signatureRect");
 			document.getElementById("container").removeChild(rect);
 			app.addCanvasGesture();
 		});
-		hammertime.on('doubletap',function(){
-			alert("doubleTap");
+		hammertime.on('doubletap', function() {
+			var rect = document.getElementById("signatureRect");
+			app.signature.height = rect.clientWidth;
+			app.signature.width = rect.clientHeight;
+			window.open('sign_screen.html');
 		})
-		hammertime.on('pan pinch panend pinchend drag dragup dragdown dragleft dragright',
-				function(ev) {
-					// pan
-					if (scale != 1) {
-						posX = last_posX + ev.deltaX;
-						posY = last_posY + ev.deltaY;
-						max_pos_x = bc.width;
-						max_pos_y = bc.height;
-						if (posX > max_pos_x) {
-							posX = max_pos_x;
-						}
-						if (posX < -max_pos_x) {
-							posX = -max_pos_x;
-						}
-						if (posY > max_pos_y) {
-							posY = max_pos_y;
-						}
-						if (posY < -max_pos_y) {
-							posY = -max_pos_y;
-						}
-					}
+		hammertime
+				.on(
+						'pan pinch panend pinchend drag dragup dragdown dragleft dragright',
+						function(ev) {
+							// pan
 
-					// pinch
-					if (ev.type == "pinch") {
-						scale = Math.max(.5, Math.min(last_scale * (ev.scale),
-								4));
-					}
-					if (ev.type == "pinchend") {
-						last_scale = scale;
-					}
+							posX = last_posX + ev.deltaX;
+							posY = last_posY + ev.deltaY;
+							max_pos_x = bc.width;
+							max_pos_y = bc.height;
+							if (posX > max_pos_x) {
+								posX = max_pos_x;
+							}
+							if (posX < -max_pos_x) {
+								posX = -max_pos_x;
+							}
+							if (posY > max_pos_y) {
+								posY = max_pos_y;
+							}
+							if (posY < -max_pos_y) {
+								posY = -max_pos_y;
+							}
 
-					// drag
-					if (ev.type == "drag") {
-						posX = ev.deltaX + lastPosX;
-						posY = ev.deltaY + lastPosY;
-					}
-					if (ev.type == "dragend") {
-						last_posX = posX;
-						last_posY = posY;
-					}
-					// panend
-					if (ev.type == "panend") {
-						last_posX = posX < max_pos_x ? posX : max_pos_x;
-						last_posY = posY < max_pos_y ? posY : max_pos_y;
-					}
+							// pinch
+							if (ev.type == "pinch") {
+								scale = Math.max(.5, Math.min(last_scale
+										* (ev.scale), 4));
+							}
+							if (ev.type == "pinchend") {
+								last_scale = scale;
+							}
 
-					if(scale!=1){
-						transform = "translate3d(" + posX + "px," + posY
-							+ "px, 0) " + "scale3d(" + scale + ", " + scale
-							+ ", 1)";
-					}
-					if (transform) {
-						el.style.webkitTransform = transform;
-					}
+							// drag
+							if (ev.type == "drag") {
+								posX = ev.deltaX + last_posX;
+								posY = ev.deltaY + last_posY;
+							}
+							if (ev.type == "dragend") {
+								last_posX = posX;
+								last_posY = posY;
+							}
+							// panend
+							if (ev.type == "panend") {
+								last_posX = posX < max_pos_x ? posX : max_pos_x;
+								last_posY = posY < max_pos_y ? posY : max_pos_y;
+							}
 
-				});
+							transform = "translate3d(" + posX + "px," + posY
+									+ "px, 0) " + "scale3d(" + scale + ", "
+									+ scale + ", 1)";
+
+							if (transform) {
+								el.style.webkitTransform = transform;
+							}
+
+						});
+	},
+	createHashPdf : function() {
+
 	}
-
 };
 app.initialize();
