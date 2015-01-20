@@ -2,14 +2,15 @@ var app = {
 	// Application Constructor
 	initialize : function() {
 		this.bindEvents();
-		this.file = null;
 		this.pages = 0;
 		this.cont = 1;
 		this.sha256 = null;
 	},
 	signature : {
 		heigth : 0,
-		width : 0
+		width : 0,
+		left : 0,
+		top : 0
 	},
 	bindEvents : function() {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
@@ -26,7 +27,7 @@ var app = {
 
 			app.pages = pdf.numPages;
 
-			// Retrieve sha256 of pdf file
+			// Create sha256 of pdf file
 			pdf.getData().then(function(arrayBuffer) {
 				var pdfraw = String.fromCharCode.apply(null, arrayBuffer);
 				var md = forge.md.sha256.create();
@@ -38,7 +39,8 @@ var app = {
 				var scale = 1.5;
 				var viewport = page.getViewport(scale);
 				//
-				// Prepare canvas using PDF page dimensions
+				// Prepare canvas using PDF page
+				// dimensions
 				//
 				var canvas = document.getElementById('the-canvas');
 				canvas.style.border = "1px solid black";
@@ -46,7 +48,8 @@ var app = {
 				canvas.height = viewport.height;
 				canvas.width = viewport.width;
 				//
-				// Render PDF page into canvas context
+				// Render PDF page into canvas
+				// context
 				//
 				var renderContext = {
 					canvasContext : context,
@@ -55,6 +58,7 @@ var app = {
 				page.render(renderContext).promise.then(function() {
 					app.buttonCheck();
 					app.addCanvasGesture();
+					app.signCheck();
 				});
 			});
 		});
@@ -79,6 +83,28 @@ var app = {
 		}
 
 	},
+	signCheck : function() {
+		if (localStorage.getItem("pageSign")) {
+			var sign = localStorage.getItem("signature");
+			var canvas = document.getElementById('the-canvas');
+			var ctx = canvas.getContext('2d');
+			var bc = canvas.getBoundingClientRect();
+			var img = new Image();
+			var maxW = localStorage.getItem("signWidth");
+			var maxH = localStorage.getItem("signHeight");
+			var size;
+			img.onload = function() {
+				if(this.width > maxW || this.height > maxH){
+					size = scaleSize(maxW, maxH, this.width, this.height)
+				}else {
+					size = [this.width,this.height];
+				}
+				ctx.drawImage(this, parseInt(localStorage.getItem("signLeft"),10)-bc.left, parseInt(localStorage.getItem("signTop"),10)-bc.top,
+						size[0],size[1]);
+			}
+			img.src = sign;
+		}
+	},
 	nextPage : function() {
 		var page = app.cont + 1;
 		app.cont = page;
@@ -95,8 +121,6 @@ var app = {
 			recognizers : [ [ Hammer.Press ] ]
 		});
 		gesture.on("press", function(ev) {
-			var canvas = document.getElementById('the-canvas');
-			var bc = canvas.getBoundingClientRect();
 			var tapX = ev.center.x;
 			var tapY = ev.center.y;
 			var img = document.createElement("img");
@@ -125,17 +149,15 @@ var app = {
 
 		var posX = 0, posY = 0, scale = 1, last_scale = 1, last_posX = 0, last_posY = 0, max_pos_x = 0, max_pos_y = 0, transform = "", el = elm;
 		var canvas = document.getElementById('the-canvas');
-		var bc = canvas.getBoundingClientRect();
 
 		hammertime.on('press', function() {
 			var rect = document.getElementById("signatureRect");
 			document.getElementById("container").removeChild(rect);
 			app.addCanvasGesture();
 		});
-		hammertime.on('doubletap', function() {
-			var rect = document.getElementById("signatureRect");
-			app.signature.height = rect.clientWidth;
-			app.signature.width = rect.clientHeight;
+		hammertime.on('doubletap', function(ev) {
+			//console.log(ev.center.y+ document.body.scrollTop);
+			localStorage.setItem("pageSign", app.cont);
 			window.open('sign_screen.html');
 		})
 		hammertime
@@ -143,11 +165,10 @@ var app = {
 						'pan pinch panend pinchend drag dragup dragdown dragleft dragright',
 						function(ev) {
 							// pan
-
 							posX = last_posX + ev.deltaX;
 							posY = last_posY + ev.deltaY;
-							max_pos_x = bc.width;
-							max_pos_y = bc.height;
+							max_pos_x = 2600;
+							max_pos_y = 1600;
 							if (posX > max_pos_x) {
 								posX = max_pos_x;
 							}
@@ -191,12 +212,31 @@ var app = {
 
 							if (transform) {
 								el.style.webkitTransform = transform;
+								var bc = el.getBoundingClientRect();
+								var canvas = document.getElementById('the-canvas');
+								var canvasRect = canvas.getBoundingClientRect();
+								console.log(bc.top+document.body.scrollTop);
+								localStorage.setItem("signWidth",bc.width);
+								localStorage.setItem("signHeight",bc.height);
+								localStorage.setItem("signLeft",bc.left+document.body.scrollLeft);
+								localStorage.setItem("signTop",bc.top+document.body.scrollTop);
 							}
 
 						});
-	},
-	createHashPdf : function() {
-
 	}
 };
 app.initialize();
+function scaleSize(maxW, maxH, currW, currH){
+
+	var ratio = currH / currW;
+
+	if(currW >= maxW && ratio <= 1){
+	currW = maxW;
+	currH = currW * ratio;
+	} else if(currH >= maxH){
+	currH = maxH;
+	currW = currH / ratio;
+	}
+
+	return [currW, currH];
+	}

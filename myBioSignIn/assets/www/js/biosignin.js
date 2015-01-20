@@ -64,8 +64,11 @@ var biosignin = {
 		biosignin.isoSignatureRep.clear();
 	},
 	saveSignature : function() {
-		biosignin.createIsoData();
-		biosignin.createSvgSignature();
+		var isoBase64 = biosignin.createIsoData();
+		var trimCanvas = biosignin.trimSignature();
+		//localStorage.setItem("signatureImg", trimCanvas);
+		localStorage.setItem("signature", trimCanvas.toDataURL());
+		window.open("index.html");
 	},
 	createIsoData : function() {
 		var isoHeader = new IsoHeader();
@@ -85,8 +88,38 @@ var biosignin = {
 		}
 		return window.btoa(binary);
 	},
-	createSvgSignature : function() {
-
+	trimSignature : function() {
+		var pointsLen = biosignin.isoSignatureRep.points.length;
+		var minX = 2560, minY = 1600, maxX = 0, maxY = 0;
+		for (var i = 0; i < pointsLen; i++) {
+			var x = Math.round(biosignin.isoSignatureRep.points[i].properties
+					.get(channel.X) / 100 * 11.7);
+			var y = Math.round(biosignin.isoSignatureRep.points[i].properties
+					.get(channel.Y) / 100 * 11.7);
+			if (x < minX)
+				minX = x;
+			if (y < minY)
+				minY = y;
+			if (x > maxX)
+				maxX = x;
+			if (y > maxY)
+				maxY = y;
+		}
+		var canvas = document.getElementById("canvas");
+		var ctx=canvas.getContext('2d');
+		var copy = document.createElement('canvas');
+		copy.id = "canvas_trim";
+		var copyCtx = copy.getContext('2d');
+		var trimHeight = maxY - minY + 5;
+	    var trimWidth = maxX - minX + 5;
+	    var trimmed = ctx.getImageData(minX-5, minY-5, trimWidth, trimHeight);
+	    copyCtx.canvas.width = trimWidth;
+		copyCtx.canvas.height = trimHeight;
+		copyCtx.putImageData(trimmed, 0, 0);
+		var container = document.getElementById("container");
+		container.removeChild(canvas);
+		container.appendChild(copy);
+		return copy;
 	}
 
 };
