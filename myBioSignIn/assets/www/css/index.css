@@ -59,7 +59,7 @@ header h1 {
 .android header div#logo {
     padding-left: 30px;
     width: 54px;
-    background: url(http://cdn.flaticon.com/png/256/1180.png) no-repeat 15px 4px;
+    background: url("../img/logoSign.png") no-repeat 15px 4px;
     background-size: 36px 36px;
     text-indent: -8000px;
 }
@@ -74,14 +74,14 @@ header h1 {
     border: none;
 }
 .android header button.back{
-	 background: url(https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-arrow-back-128.png) no-repeat -2px 0;
+	 background: url(../img/arrow.png) no-repeat -2px 0;
 	 background-size: 20px 26px;
 	 opacity: 0.2;
 	 top: 50%;
      left: 40%;
 }
 .android header button.next{
-	background: url(https://cdn4.iconfinder.com/data/icons/ionicons/512/icon-ios7-arrow-back-128.png) no-repeat -2px 0;
+	background: url(../img/arrow.png) no-repeat -2px 0;
 	-ms-transform: rotate(180deg); /* IE 9 */
     -webkit-transform: rotate(180deg); /* Chrome, Safari, Opera */
 	transform: rotate(180deg);

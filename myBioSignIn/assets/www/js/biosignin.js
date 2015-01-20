@@ -49,6 +49,10 @@ var biosignin = {
 
 	},
 	onDeviceReady : function() {
+		document.addEventListener("backbutton", function(e){
+			localStorage.setItem("pageSign",0);
+			navigator.app.backHistory();
+		},false);
 		biosignin.nativeReq();
 
 	},
@@ -59,7 +63,6 @@ var biosignin = {
 
 	},
 	clearSignature : function() {
-		// signaturePad.clear();
 		biosignin.signatureCapture.clear();
 		biosignin.isoSignatureRep.clear();
 	},
@@ -117,7 +120,7 @@ var biosignin = {
 		copyCtx.canvas.height = trimHeight;
 		copyCtx.putImageData(trimmed, 0, 0);
 		var container = document.getElementById("container");
-		container.removeChild(canvas);
+		//container.removeChild(canvas);
 		container.appendChild(copy);
 		return copy;
 	}

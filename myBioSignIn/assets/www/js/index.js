@@ -6,12 +6,6 @@ var app = {
 		this.cont = 1;
 		this.sha256 = null;
 	},
-	signature : {
-		heigth : 0,
-		width : 0,
-		left : 0,
-		top : 0
-	},
 	bindEvents : function() {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
 
@@ -84,6 +78,7 @@ var app = {
 
 	},
 	signCheck : function() {
+		console.log(localStorage.getItem("pageSign"));
 		if (localStorage.getItem("pageSign")) {
 			var sign = localStorage.getItem("signature");
 			var canvas = document.getElementById('the-canvas');
@@ -130,6 +125,10 @@ var app = {
 			img.style.position = "absolute";
 			img.style.left = tapX + document.body.scrollLeft - 125 + "px";
 			img.style.top = tapY + document.body.scrollTop - 50 + "px";
+			localStorage.setItem("signLeft",img.style.left);
+			localStorage.setItem("signTop",img.style.top);
+			localStorage.setItem("signWidth",img.width);
+			localStorage.setItem("signHeight",img.height);
 			src.appendChild(img);
 			gesture.off("press");
 			app.addSignatureGesture();
@@ -213,9 +212,6 @@ var app = {
 							if (transform) {
 								el.style.webkitTransform = transform;
 								var bc = el.getBoundingClientRect();
-								var canvas = document.getElementById('the-canvas');
-								var canvasRect = canvas.getBoundingClientRect();
-								console.log(bc.top+document.body.scrollTop);
 								localStorage.setItem("signWidth",bc.width);
 								localStorage.setItem("signHeight",bc.height);
 								localStorage.setItem("signLeft",bc.left+document.body.scrollLeft);
