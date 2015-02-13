@@ -9,7 +9,8 @@ var biosignin = {
 		// signaturePad = new SignaturePad(canvas);
 		this.signatureCapture = new SignatureCapture();
 		this.isoSignatureRep = new SignatureRepresentation();
-
+		this.cert = null;
+		this.keys = null;
 		this.bindEvents();
 	},
 	bindEvents : function() {
@@ -68,8 +69,18 @@ var biosignin = {
 	},
 	saveSignature : function() {
 		var isoBase64 = biosignin.createIsoData();
+		/*
+		 * create xml container with hash of document and isoBase64 of the
+		 * biometric signature
+		 */
+		var xml = biosignin.createXmlContainer(isoBase64);
+		var chiperXmlPem = biosignin.chiperPKCS7(xml);
+		//biosignin.decipherPKCS7(chiperXmlPem);
+		
+		console.log(chiperXmlPem);
+		
+		//show signature img on pdf
 		var trimCanvas = biosignin.trimSignature();
-		//localStorage.setItem("signatureImg", trimCanvas);
 		localStorage.setItem("signature", trimCanvas.toDataURL());
 		window.open("index.html");
 	},
@@ -90,6 +101,115 @@ var biosignin = {
 			binary += String.fromCharCode(bytes[i]);
 		}
 		return window.btoa(binary);
+	},
+	createXmlContainer : function(isoData) {
+		var xw = new XMLWriter('UTF-8');
+		xw.formatting = 'indented';// add indentation and newlines
+		xw.indentChar = ' ';// indent with spaces
+		xw.indentation = 2;// add 2 spaces per level
+		xw.writeStartDocument();
+		xw.writeStartElement('isoSignatureData');
+		xw.writeComment('hash of document and isoBase64 of the biometric signature');
+		xw.writeElementString('hashDoc', localStorage.getItem("hashDocument"));
+		xw.writeElementString('isoData', isoData );
+		xw.writeEndElement();
+		xw.writeEndDocument();
+		return xw.flush();
+	},
+	chiperPKCS7 : function (xml) {
+		//create certificate
+		var pki = forge.pki;
+		var keys = pki.rsa.generateKeyPair(2048);
+		this.keys = keys;
+		var cert = pki.createCertificate();
+		cert.publicKey = keys.publicKey;
+		cert.serialNumber = '01';
+		cert.validity.notBefore = new Date();
+		cert.validity.notAfter = new Date();
+		cert.validity.notAfter.setFullYear(cert.validity.notBefore.getFullYear() + 1);
+		var attrs = [{
+		  name: 'commonName',
+		  value: 'myBiosignIn.polimi.it'
+		}, {
+		  name: 'countryName',
+		  value: 'IT'
+		}, {
+		  shortName: 'ST',
+		  value: 'Italy'
+		}, {
+		  name: 'localityName',
+		  value: 'Milan'
+		}, {
+		  name: 'organizationName',
+		  value: 'Test'
+		}, {
+		  shortName: 'OU',
+		  value: 'Test'
+		}];
+		cert.setSubject(attrs);
+		cert.setIssuer(attrs);
+		cert.setExtensions([{
+		  name: 'basicConstraints',
+		  cA: true
+		}, {
+		  name: 'keyUsage',
+		  keyCertSign: true,
+		  digitalSignature: true,
+		  nonRepudiation: true,
+		  keyEncipherment: true,
+		  dataEncipherment: true
+		}, {
+		  name: 'extKeyUsage',
+		  serverAuth: true,
+		  clientAuth: true,
+		  codeSigning: true,
+		  emailProtection: true,
+		  timeStamping: true
+		}, {
+		  name: 'nsCertType',
+		  client: true,
+		  server: true,
+		  email: true,
+		  objsign: true,
+		  sslCA: true,
+		  emailCA: true,
+		  objCA: true
+		}, {
+		  name: 'subjectAltName',
+		  altNames: [{
+		    type: 6, // URI
+		    value: 'http://example.org/webid#me'
+		  }, {
+		    type: 7, // IP
+		    ip: '127.0.0.1'
+		  }]
+		}, {
+		  name: 'subjectKeyIdentifier'
+		}]);
+		this.cert = cert;
+		// self-sign certificate
+		cert.sign(keys.privateKey);
+		// convert a Forge certificate to PEM
+		var pem = pki.certificateToPem(cert);
+		var p7 = forge.pkcs7.createEnvelopedData();
+		var certFromPem = forge.pki.certificateFromPem(pem);
+		p7.addRecipient(certFromPem);
+		p7.content = forge.util.createBuffer(xml);
+		console.log(p7.content);
+		// encrypt
+		p7.encrypt();
+		// convert message to PEM
+		var pem = forge.pkcs7.messageToPem(p7);
+		return pem;
+	},
+	decipherPKCS7 : function (pem) {
+		var p7 = forge.pkcs7.messageFromPem(pem);
+		// look at p7.recipients
+		// find a recipient by the issuer of a certificate
+		var recipient = p7.findRecipient(this.cert);
+		// decrypt
+		p7.decrypt(p7.recipients[0], this.keys.privateKey);
+		console.log(p7.content);
 	},
 	trimSignature : function() {
 		var pointsLen = biosignin.isoSignatureRep.points.length;

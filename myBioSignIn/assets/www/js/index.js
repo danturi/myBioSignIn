@@ -7,6 +7,7 @@ var app = {
 		this.current_page;
 		this.sha256 = null;
 		this.canvas = document.getElementById('the-canvas');
+		this.signed = false;
 	},
 	bindEvents : function() {
 		document.addEventListener('deviceready', this.onDeviceReady, false);
@@ -66,7 +67,7 @@ var app = {
 							currentPage++;
 							getPage(); // get next page
 						} else {
-							if(!localStorage.getItem("pageSign")){
+							if (!localStorage.getItem("pageSign")) {
 								localStorage.setItem("pageSign", 0);
 							}
 							app.current_page = 1;
@@ -85,15 +86,14 @@ var app = {
 		img.onload = function() {
 			ctx.drawImage(this, 0, 0, ctx.canvas.width, ctx.canvas.height);
 			app.canvas.style.display = "block";
-			app.generalCheck(); // invoke callback when we're done
+			app.generalCheck();// invoke callback when we're done
 		};
 		img.src = app.pages[index]; // start loading the data-uri as source
-
 	},
 	generalCheck : function() {
 		this.buttonCheck();
-		//console.log(localStorage.getItem("pageSign"));
-		if(localStorage.getItem("pageSign")==0){
+		// console.log(localStorage.getItem("pageSign"));
+		if (localStorage.getItem("pageSign") == 0) {
 			this.addCanvasGesture();
 		}
 		this.signCheck();
@@ -120,10 +120,11 @@ var app = {
 	},
 	signCheck : function() {
 		var pageSign = localStorage.getItem("pageSign");
-		//console.log(pageSign);
+		if(pageSign != 0)
+			this.signed = true;
 		if (pageSign && (this.current_page == pageSign)) {
 			var sign = localStorage.getItem("signature");
-			//console.log(sign);
+			// console.log(sign);
 			var canvas = this.canvas;
 			var ctx = canvas.getContext('2d');
 			var bc = canvas.getBoundingClientRect();
@@ -209,8 +210,10 @@ var app = {
 			var bc = el.getBoundingClientRect();
 			localStorage.setItem("signWidth", bc.width);
 			localStorage.setItem("signHeight", bc.height);
-			localStorage.setItem("signLeft", bc.left+document.body.scrollLeft);
-			localStorage.setItem("signTop", bc.top+document.body.scrollTop);
+			localStorage
+					.setItem("signLeft", bc.left + document.body.scrollLeft);
+			localStorage.setItem("signTop", bc.top + document.body.scrollTop);
+			localStorage.setItem("hashDocument", app.sha256);
 			window.open('sign_screen.html');
 		});
 		hammertime
