@@ -184,13 +184,13 @@ SignatureRepresentation.prototype.initializeChannels = function() {
 	// create channel descriptions
 	var channelDescrX = new ChannelDescription(channel.X);
 	channelDescrX.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
-			Math.round(2560/11.7*100));
+			Math.round(2560/deviceConstants.pixelToMillimeters*100));
 	channelDescrX.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
 			0);
 	channelDescrX.attributes.put(channelAttributes.SCALING_VALUE,100);
 	var channelDescrY = new ChannelDescription(channel.Y);
 	channelDescrY.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
-			Math.round(1600/11.7*100));
+			Math.round(1600/deviceConstants.pixelToMillimeters*100));
 	channelDescrY.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
 			0);
 	channelDescrY.attributes.put(channelAttributes.SCALING_VALUE,100);

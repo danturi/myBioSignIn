@@ -14,6 +14,9 @@ var app = {
 
 	},
 	onDeviceReady : function() {
+		document.addEventListener("backbutton", function(e) {
+			navigator.app.exitApp();
+		}, false);
 		app.openPdf();
 	},
 	openPdf : function() {
@@ -42,7 +45,7 @@ var app = {
 				pdf.getPage(currentPage).then(function(page) {
 					var scale = 1.5;
 					var viewport = page.getViewport(scale);
-					//
+
 					// Prepare canvas using PDF page
 					// dimensions
 					//
@@ -120,11 +123,10 @@ var app = {
 	},
 	signCheck : function() {
 		var pageSign = localStorage.getItem("pageSign");
-		if(pageSign != 0)
+		if (pageSign != 0)
 			this.signed = true;
 		if (pageSign && (this.current_page == pageSign)) {
 			var sign = localStorage.getItem("signature");
-			// console.log(sign);
 			var canvas = this.canvas;
 			var ctx = canvas.getContext('2d');
 			var bc = canvas.getBoundingClientRect();
@@ -160,29 +162,56 @@ var app = {
 		var gesture = new Hammer(canvas, {
 			recognizers : [ [ Hammer.Press ] ]
 		});
-		gesture.on("press", function(ev) {
-			var tapX = ev.center.x;
-			var tapY = ev.center.y;
-			var img;
-			if (document.getElementById("signatureRect")) {
-				img = document.getElementById("signatureRect");
-			} else {
-				img = document.createElement("img");
-			}
-			var src = document.getElementById("container");
-			img.id = "signatureRect";
-			img.src = "img/tapToSign.png";
-			img.style.position = "absolute";
-			img.style.left = tapX + document.body.scrollLeft - 125 + "px";
-			img.style.top = tapY + document.body.scrollTop - 50 + "px";
-			localStorage.setItem("signLeft", img.style.left);
-			localStorage.setItem("signTop", img.style.top);
-			localStorage.setItem("signWidth", img.width);
-			localStorage.setItem("signHeight", img.height);
-			src.appendChild(img);
-			gesture.off("press");
-			app.addSignatureGesture();
-		});
+		gesture
+				.on("press",
+						function(ev) {
+							var tapX = ev.center.x;
+							var tapY = ev.center.y;
+							var img;
+							if (document.getElementById("signatureRect")) {
+								img = document.getElementById("signatureRect");
+							} else {
+								img = document.createElement("img");
+							}
+							var src = document.getElementById("container");
+							var logo = document.getElementById("header");
+							img.id = "signatureRect";
+							img.src = "img/tapToSign.png";
+							img.style.position = "absolute";
+							img.onload = function() {
+								var leftPos = tapX + document.body.scrollLeft
+										- img.width / 2;
+								var topPos = tapY + document.body.scrollTop
+										- img.height / 2;
+								var canvasLeft = parseInt(
+										app.canvas.offsetLeft, 10);
+
+								// check box signature is inside the canvas
+								if (leftPos < canvasLeft) {
+									leftPos = canvasLeft;
+								}
+								if (leftPos + img.width > canvasLeft
+										+ app.canvas.width) {
+									leftPos = canvasLeft + app.canvas.width
+											- img.width;
+								}
+								if (topPos < logo.offsetHeight) {
+									topPos = logo.offsetHeight;
+								}
+								if (topPos + img.height > app.canvas.height
+										+ logo.offsetHeight) {
+									topPos = app.canvas.height
+											+ logo.offsetHeight - img.height;
+								}
+
+								img.style.left = leftPos + "px";
+								img.style.top = topPos + "px";
+	
+								src.appendChild(img);
+								gesture.off("press");
+								app.addSignatureGesture();
+							}
+						});
 	},
 	addSignatureGesture : function() {
 		var signRect = document.getElementById("signatureRect");
@@ -196,26 +225,58 @@ var app = {
 			enable : true
 		});
 
-		var posX = 0, posY = 0, scale = 1, last_scale = 1, last_posX = 0, last_posY = 0, max_pos_x = 0, max_pos_y = 0, transform = "", el = elm;
+		var posX = 0, posY = 0, scale = 1, last_scale = 1, last_posX = 0, last_posY = 0, max_pos_x = 0, max_pos_y = 0, min_pos_x = 0, min_pos_y = 0, transform = "", el = elm;
 		var canvas = this.canvas;
+		var logo = document.getElementById("header");
+		// X,Y relative to canvas
+		var firstX = parseInt(elm.style.left, 10) - app.canvas.offsetLeft;
+		var firstY = parseInt(elm.style.top, 10) - 44;
+		// console.log(firstY);
 
 		hammertime.on('press', function() {
 			var src = document.getElementById("container");
 			src.removeChild(elm);
 			app.addCanvasGesture();
 		});
-		hammertime.on('doubletap', function(ev) {
-			// console.log(ev.center.y+ document.body.scrollTop);
-			localStorage.setItem("pageSign", app.current_page);
-			var bc = el.getBoundingClientRect();
-			localStorage.setItem("signWidth", bc.width);
-			localStorage.setItem("signHeight", bc.height);
-			localStorage
-					.setItem("signLeft", bc.left + document.body.scrollLeft);
-			localStorage.setItem("signTop", bc.top + document.body.scrollTop);
-			localStorage.setItem("hashDocument", app.sha256);
-			window.open('sign_screen.html');
-		});
+		hammertime
+				.on(
+						'doubletap',
+						function(ev) {
+							localStorage.setItem("pageSign", app.current_page);
+							var bc = el.getBoundingClientRect();
+							localStorage.setItem("signWidth", bc.width);
+							localStorage.setItem("signHeight", bc.height);
+							localStorage.setItem("signLeft", bc.left
+									+ document.body.scrollLeft);
+							localStorage.setItem("signTop", bc.top
+									+ document.body.scrollTop);
+							
+							// Save pdfUnit position info
+							localStorage
+									.setItem(
+											"signTopPDFSize",
+											Math.round((app.canvas.height
+															- (bc.top+document.body.scrollTop
+															- logo.offsetHeight+bc.height)) / 1.5));
+							localStorage
+									.setItem(
+											"signLeftPDFSize",
+											Math.round((bc.left
+															+ document.body.scrollLeft - app.canvas.offsetLeft) / 1.5));
+							//test
+							//console.log(app.canvas.width);
+							console.log(app.canvas.height
+															- (bc.top+document.body.scrollTop
+															- logo.offsetHeight+bc.height));
+							//console.log(bc.left
+								//	+ document.body.scrollLeft - app.canvas.offsetLeft);
+							localStorage.setItem("signWidthPDFSize",
+									bc.width / 1.5);
+							localStorage.setItem("signHeightPDFSize",
+									bc.height / 1.5);
+							localStorage.setItem("hashDocument", app.sha256);
+							window.open('sign_screen.html');
+						});
 		hammertime
 				.on(
 						'pan pinch panend pinchend drag dragup dragdown dragleft dragright',
@@ -223,25 +284,37 @@ var app = {
 							// pan
 							posX = last_posX + ev.deltaX;
 							posY = last_posY + ev.deltaY;
-							max_pos_x = 2600;
-							max_pos_y = 1600;
+							// check if signature box is inside the canvas when
+							// moved
+							if (last_scale > 1) {
+								max_pos_x = app.canvas.width - firstX - 250
+										* scale / 1.5;
+								max_pos_y = app.canvas.height - firstY - 100
+										* scale / 1.5;
+								min_pos_x = firstX / (scale * 1.5);
+							} else {
+								max_pos_x = app.canvas.width - firstX - 250;
+								min_pos_x = firstX;
+								max_pos_y = app.canvas.height - firstY - 100;
+								min_pos_y = firstY;
+							}
 							if (posX > max_pos_x) {
 								posX = max_pos_x;
 							}
-							if (posX < -max_pos_x) {
-								posX = -max_pos_x;
+							if (posX < -min_pos_x) {
+								posX = -min_pos_x;
 							}
 							if (posY > max_pos_y) {
 								posY = max_pos_y;
 							}
-							if (posY < -max_pos_y) {
-								posY = -max_pos_y;
+							if (posY < -min_pos_y) {
+								posY = -min_pos_y;
 							}
 
 							// pinch
 							if (ev.type == "pinch") {
 								scale = Math.max(.5, Math.min(last_scale
-										* (ev.scale), 4));
+										* (ev.scale), 3));
 							}
 							if (ev.type == "pinchend") {
 								last_scale = scale;
@@ -268,13 +341,6 @@ var app = {
 
 							if (transform) {
 								el.style.webkitTransform = transform;
-								var bc = el.getBoundingClientRect();
-								localStorage.setItem("signWidth", bc.width);
-								localStorage.setItem("signHeight", bc.height);
-								localStorage.setItem("signLeft", bc.left
-										+ document.body.scrollLeft);
-								localStorage.setItem("signTop", bc.top
-										+ document.body.scrollTop);
 							}
 
 						});

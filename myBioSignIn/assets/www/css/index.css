@@ -25,6 +25,7 @@ header {
     width: 100%;
     height: 44px;
     line-height: 44px;
+    z-index:10;
 }
 
 header div {
@@ -37,6 +38,7 @@ header div {
     background: none;
     cursor: pointer;
     outline: 0;
+
 }
 
 header h1 {

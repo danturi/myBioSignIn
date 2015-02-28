@@ -38,7 +38,7 @@ var SignatureCapture = (function (document) {
 	
 	SignatureCapture.prototype.initializeCanvas = function() {
 		var context = this.context;
-		
+		var canvas = this.canvas;
 		context.fillStyle = "rgba(0,0,0,0)";
 		context.strokeStyle = "#000000";
 		context.lineWidth = 1;
@@ -92,14 +92,15 @@ var SignatureCapture = (function (document) {
 				y : (xyLast.y + xy.y) / 2
 		};
 
+		/*
 		if (this.calculate) {
 			var xLast = (this.xyAddLast.x + xyLast.x + xyAdd.x) / 3;
 			var yLast = (this.xyAddLast.y + xyLast.y + xyAdd.y) / 3;
 			this.pixels.push(xLast, yLast);
 		} else {
 			this.calculate = true;
-		}
-
+		}*/
+		
 		context.quadraticCurveTo(this.xyLast.x, this.xyLast.y, xyAdd.x, xyAdd.y);
 		this.pixels.push(xyAdd.x, xyAdd.y);
 		context.stroke();
@@ -107,7 +108,7 @@ var SignatureCapture = (function (document) {
 		context.moveTo(xyAdd.x, xyAdd.y);
 		this.xyAddLast = xyAdd;
 		this.xyLast = xy;
-
+		
 	};
 
 	SignatureCapture.prototype.up = function (e) {

@@ -1,6 +1,15 @@
 /**
  * 
  */
+var deviceConstants = {
+		pixelToMillimeters: 11.7,
+		maxX: 2560,
+		minX: 0,
+		maxY: 1600,
+		minY: 0,
+		maxF: 65535,
+		minF: 0
+}
 
 var Point = function(x, y, pressure, time) {
 	this.x = x;
@@ -18,6 +27,8 @@ var scaling = {
 		Y: 100,
 		F: 65535	
 }
+
+
 IsoPoint.prototype.toBytes = function() {
 	
 	var bufferTmp = new ArrayBuffer(32);
@@ -69,8 +80,9 @@ IsoPoint.prototype.fromBytes = function (bytesIso,signRep) {
 function addIsoPoint(point) {
 	var isoPoint = new IsoPoint();
 	//  11.7 pixels/mm
-	isoPoint.properties.put(channel.X,Math.round(point.x / 11.7 * scaling.X));
-	isoPoint.properties.put(channel.Y,Math.round(point.y / 11.7 * scaling.Y));
+	isoPoint.properties.put(channel.X,Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X));
+	// Y, ISO convention upwards (Android convention downwards)
+	isoPoint.properties.put(channel.Y,Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y));
 	
 	//TODO add scaling values for T
 	isoPoint.properties.put(channel.F,Math.round(point.pressure*scaling.F));

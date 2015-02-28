@@ -76,11 +76,16 @@ var biosignin = {
 		var xml = biosignin.createXmlContainer(isoBase64);
 		var chiperXmlPem = biosignin.chiperPKCS7(xml);
 		//biosignin.decipherPKCS7(chiperXmlPem);
-		
-		console.log(chiperXmlPem);
+		//console.log(chiperXmlPem);
 		
 		//show signature img on pdf
 		var trimCanvas = biosignin.trimSignature();
+		/*var context= trimCanvas.getContext("2d");
+	      context.beginPath();
+	      context.rect(0, 0, trimCanvas.width, trimCanvas.height);
+	      context.lineWidth = 2;
+	      context.strokeStyle = 'black';
+	      context.stroke();*/
 		localStorage.setItem("signature", trimCanvas.toDataURL());
 		window.open("index.html");
 	},
@@ -110,7 +115,19 @@ var biosignin = {
 		xw.writeStartDocument();
 		xw.writeStartElement('isoSignatureData');
 		xw.writeComment('hash of document and isoBase64 of the biometric signature');
-		xw.writeElementString('hashDoc', localStorage.getItem("hashDocument"));
+		xw.writeStartElement("hashInfo");
+		xw.writeElementString("hashAlgorithm", "SHA-256");
+		xw.writeElementString("startOffset","0");
+		xw.writeElementString("length","0");
+		xw.writeElementString('hashValue', localStorage.getItem("hashDocument"));
+		xw.writeEndElement();
+		xw.writeStartElement('signaturePositionBinding');
+		xw.writeElementString('page', localStorage.getItem('pageSign'));
+		xw.writeElementString('topX', localStorage.getItem('signLeftPDFSize'));
+		xw.writeElementString('topY',localStorage.getItem('signTopPDFSize'));
+		xw.writeElementString('width',localStorage.getItem("signWidthPDFSize"));
+		xw.writeElementString('heigth',localStorage.getItem("signHeightPDFSize"));
+		xw.writeEndElement();
 		xw.writeElementString('isoData', isoData );
 		xw.writeEndElement();
 		xw.writeEndDocument();
@@ -217,8 +234,8 @@ var biosignin = {
 		for (var i = 0; i < pointsLen; i++) {
 			var x = Math.round(biosignin.isoSignatureRep.points[i].properties
 					.get(channel.X) / 100 * 11.7);
-			var y = Math.round(biosignin.isoSignatureRep.points[i].properties
-					.get(channel.Y) / 100 * 11.7);
+			var y = Math.round((biosignin.isoSignatureRep.points[i].properties
+					.get(channel.Y)) / 100 * 11.7);
 			if (x < minX)
 				minX = x;
 			if (y < minY)
@@ -233,9 +250,11 @@ var biosignin = {
 		var copy = document.createElement('canvas');
 		copy.id = "canvas_trim";
 		var copyCtx = copy.getContext('2d');
-		var trimHeight = maxY - minY + 5;
-	    var trimWidth = maxX - minX + 5;
-	    var trimmed = ctx.getImageData(minX-5, minY-5, trimWidth, trimHeight);
+		
+		var trimHeight = maxY - minY+1;
+	    var trimWidth = maxX - minX+2;
+	    //Y inverted
+	    var trimmed = ctx.getImageData(minX-1, 1600-maxY, trimWidth, trimHeight);
 	    copyCtx.canvas.width = trimWidth;
 		copyCtx.canvas.height = trimHeight;
 		copyCtx.putImageData(trimmed, 0, 0);
