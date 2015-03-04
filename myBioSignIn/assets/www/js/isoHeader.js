@@ -15,7 +15,7 @@ function IsoHeader() {
 	//certification flag
 	this.viewCertificationFlag = new DataView(this.buffer,14,1);
 };
-
+// Initialize header with constant value
 IsoHeader.prototype.initialize = function (){
 	this.viewFormatId.setUint32(0,0x53444900,false);
 	this.viewVersionId.setUint32(0,0x30323000,false);
@@ -51,7 +51,7 @@ IsoHeader.prototype.fromBytes = function(bytesIso) {
 	
 	return isoHeader;
 };
-
+// Create isoHeader buffer, set total record length
 IsoHeader.prototype.toBytes = function(isoBodyLength) {
 	this.initialize();
 	this.viewRecordLength.setUint32(0,isoBodyLength+15,false);

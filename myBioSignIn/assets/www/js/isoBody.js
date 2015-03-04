@@ -22,7 +22,7 @@ function SignatureRepresentation() {
 	this.length=0;
 	return this;
 };
-
+// Create binary data for signature Representation
 SignatureRepresentation.prototype.toBytes = function() {
 	
 	//SIGNATURE HEADER
@@ -184,22 +184,22 @@ SignatureRepresentation.prototype.initializeChannels = function() {
 	// create channel descriptions
 	var channelDescrX = new ChannelDescription(channel.X);
 	channelDescrX.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
-			Math.round(2560/deviceConstants.pixelToMillimeters*100));
+			Math.round(deviceConstants.maxX/deviceConstants.pixelToMillimeters*scaling.X));
 	channelDescrX.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
-			0);
-	channelDescrX.attributes.put(channelAttributes.SCALING_VALUE,100);
+			deviceConstants.minX);
+	channelDescrX.attributes.put(channelAttributes.SCALING_VALUE,scaling.X);
 	var channelDescrY = new ChannelDescription(channel.Y);
 	channelDescrY.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE,
-			Math.round(1600/deviceConstants.pixelToMillimeters*100));
+			Math.round(deviceConstants.maxY/deviceConstants.pixelToMillimeters*scaling.Y));
 	channelDescrY.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE,
-			0);
-	channelDescrY.attributes.put(channelAttributes.SCALING_VALUE,100);
+			deviceConstants.minY);
+	channelDescrY.attributes.put(channelAttributes.SCALING_VALUE,scaling.Y);
 	var channelDescrF = new ChannelDescription(channel.F);
 	channelDescrF.attributes
-			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 65535);
+			.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, deviceConstants.maxF*scaling.F);
 	channelDescrF.attributes
-			.put(channelAttributes.MINIMUM_CHANNEL_VALUE, 0);
-	channelDescrF.attributes.put(channelAttributes.SCALING_VALUE, 65535);
+			.put(channelAttributes.MINIMUM_CHANNEL_VALUE, deviceConstants.minF*scaling.F);
+	channelDescrF.attributes.put(channelAttributes.SCALING_VALUE, scaling.F);
 	var channelDescrT = new ChannelDescription(channel.T);
 	// add channels
 	this.channels.put(channel.X, channelDescrX);

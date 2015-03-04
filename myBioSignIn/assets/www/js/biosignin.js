@@ -76,7 +76,7 @@ var biosignin = {
 		var xml = biosignin.createXmlContainer(isoBase64);
 		var chiperXmlPem = biosignin.chiperPKCS7(xml);
 		//biosignin.decipherPKCS7(chiperXmlPem);
-		//console.log(chiperXmlPem);
+		console.log(chiperXmlPem);
 		
 		//show signature img on pdf
 		var trimCanvas = biosignin.trimSignature();
@@ -122,9 +122,10 @@ var biosignin = {
 		xw.writeElementString('hashValue', localStorage.getItem("hashDocument"));
 		xw.writeEndElement();
 		xw.writeStartElement('signaturePositionBinding');
+		xw.writeComment('additional info of signature position in PDFUnit');
 		xw.writeElementString('page', localStorage.getItem('pageSign'));
-		xw.writeElementString('topX', localStorage.getItem('signLeftPDFSize'));
-		xw.writeElementString('topY',localStorage.getItem('signTopPDFSize'));
+		xw.writeElementString('X', localStorage.getItem('signLeftPDFSize'));
+		xw.writeElementString('Y',localStorage.getItem('signTopPDFSize'));
 		xw.writeElementString('width',localStorage.getItem("signWidthPDFSize"));
 		xw.writeElementString('heigth',localStorage.getItem("signHeightPDFSize"));
 		xw.writeEndElement();

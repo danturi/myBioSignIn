@@ -7,7 +7,7 @@ var deviceConstants = {
 		minX: 0,
 		maxY: 1600,
 		minY: 0,
-		maxF: 65535,
+		maxF: 2.800,
 		minF: 0
 }
 
@@ -25,7 +25,7 @@ var IsoPoint = function() {
 var scaling = {
 		X: 100,
 		Y: 100,
-		F: 65535	
+		F: 1000	
 }
 
 
@@ -85,7 +85,7 @@ function addIsoPoint(point) {
 	isoPoint.properties.put(channel.Y,Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y));
 	
 	//TODO add scaling values for T
-	isoPoint.properties.put(channel.F,Math.round(point.pressure*scaling.F));
+	isoPoint.properties.put(channel.F,Math.round(tabletUnitToNewton(point.pressure)*scaling.F));
 	var firstTime = biosignin.isoSignatureRep.getFirstPointTime();
 	if(firstTime == 0){
 		isoPoint.properties.put(channel.T,point.time);
@@ -100,4 +100,19 @@ function createPoint(e) {
 	var point  = new Point(Math.round(e.x / window.devicePixelRatio), Math.round(e.y
 			/ window.devicePixelRatio), e.pressure, e.time);
 	addIsoPoint(point);
+};
+
+function tabletUnitToNewton(value){
+	if(value <= 0.988){
+		//empirical force function
+		return 0,0217800303*Math.exp(4.5880838131*value).toFixed(3);
+	}else {
+		if(value <= 0.996){
+			//linear interpolation 
+			return (value-0.996)*(-213.5)-((value-0.986)*(-246.8)).toFixed(3);
+		}else {
+			//max force value
+			return 2.800;
+		}
+	}
 };
