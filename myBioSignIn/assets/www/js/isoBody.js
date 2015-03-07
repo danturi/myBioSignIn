@@ -201,6 +201,9 @@ SignatureRepresentation.prototype.initializeChannels = function() {
 			.put(channelAttributes.MINIMUM_CHANNEL_VALUE, deviceConstants.minF*scaling.F);
 	channelDescrF.attributes.put(channelAttributes.SCALING_VALUE, scaling.F);
 	var channelDescrT = new ChannelDescription(channel.T);
+	channelDescrT.attributes.put(channelAttributes.MAXIMUM_CHANNEL_VALUE, 65535);
+	channelDescrT.attributes.put(channelAttributes.MINIMUM_CHANNEL_VALUE, 0);
+	channelDescrT.attributes.put(channelAttributes.SCALING_VALUE, scaling.T);
 	// add channels
 	this.channels.put(channel.X, channelDescrX);
 	this.channels.put(channel.Y, channelDescrY);

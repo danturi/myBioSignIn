@@ -15,7 +15,7 @@ var Point = function(x, y, pressure, time) {
 	this.x = x;
 	this.y = y;
 	this.pressure = pressure;
-	this.time = Math.round(time/1000);
+	this.time = time; //milliseconds
 };
 	
 var IsoPoint = function() {
@@ -25,7 +25,8 @@ var IsoPoint = function() {
 var scaling = {
 		X: 100,
 		Y: 100,
-		F: 1000	
+		F: 1000,
+		T: 1000
 }
 
 
@@ -83,17 +84,21 @@ function addIsoPoint(point) {
 	isoPoint.properties.put(channel.X,Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X));
 	// Y, ISO convention upwards (Android convention downwards)
 	isoPoint.properties.put(channel.Y,Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y));
-	
-	//TODO add scaling values for T
 	isoPoint.properties.put(channel.F,Math.round(tabletUnitToNewton(point.pressure)*scaling.F));
 	var firstTime = biosignin.isoSignatureRep.getFirstPointTime();
 	if(firstTime == 0){
-		isoPoint.properties.put(channel.T,point.time);
+		isoPoint.properties.put(channel.T,0);
 		biosignin.isoSignatureRep.setFirstPointTime(point.time);
 	}else {
-		isoPoint.properties.put(channel.T,point.time - firstTime);
+		if(Math.round((point.time - firstTime)/1000*scaling.T) > 65535){
+			alert("Hai impiegato troppo tempo per firmare, ricomincia!");
+			biosignin.clearSignature();
+		}else{
+			isoPoint.properties.put(channel.T,Math.round((point.time - firstTime)/1000*scaling.T));
+		}
 	}
 	biosignin.isoSignatureRep.points.push(isoPoint);
+	console.log(isoPoint.properties.get(channel.T));
 };
 
 function createPoint(e) {
