@@ -70,8 +70,9 @@ var app = {
 							currentPage++;
 							getPage(); // get next page
 						} else {
-							if (!localStorage.getItem("pageSign")) {
-								localStorage.setItem("pageSign", 0);
+							if (localStorage.getItem("pageSign")==0 || localStorage.getItem("pageSign")==null) {
+								//localStorage.setItem("pageSign", 0);
+								app.addCanvasGesture();
 							}
 							app.current_page = 1;
 							app.drawPage(0);
@@ -96,9 +97,6 @@ var app = {
 	generalCheck : function() {
 		this.buttonCheck();
 		// console.log(localStorage.getItem("pageSign"));
-		if (localStorage.getItem("pageSign") == 0) {
-			this.addCanvasGesture();
-		}
 		this.signCheck();
 	},
 	buttonCheck : function() {
