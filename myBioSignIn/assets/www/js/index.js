@@ -90,7 +90,7 @@ var app = {
 		img.onload = function() {
 			ctx.drawImage(this, 0, 0, ctx.canvas.width, ctx.canvas.height);
 			app.canvas.style.display = "block";
-			app.generalCheck();// invoke callback when we're done
+			app.generalCheck();
 		};
 		img.src = app.pages[index]; // start loading the data-uri as source
 	},

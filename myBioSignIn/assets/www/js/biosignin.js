@@ -54,6 +54,7 @@ var biosignin = {
 			localStorage.setItem("pageSign",0);
 			navigator.app.backHistory();
 		},false);
+		biosignin.isoSignatureRep.initializeChannels();
 		biosignin.nativeReq();
 
 	},
@@ -66,6 +67,7 @@ var biosignin = {
 	clearSignature : function() {
 		biosignin.signatureCapture.clear();
 		biosignin.isoSignatureRep.clear();
+		biosignin.initialize();
 	},
 	saveSignature : function() {
 		var isoBase64 = biosignin.createIsoData();
@@ -92,7 +94,7 @@ var biosignin = {
 	createIsoData : function() {
 		var isoHeader = new IsoHeader();
 		var isoBody = new IsoBody();
-		biosignin.isoSignatureRep.initializeChannels();
+		//biosignin.isoSignatureRep.initializeChannels();
 		isoBody.representations.push(biosignin.isoSignatureRep);
 
 		var bufferBody = biosignin.isoSignatureRep.toBytes();

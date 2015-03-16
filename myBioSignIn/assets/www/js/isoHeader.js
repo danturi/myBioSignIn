@@ -25,7 +25,7 @@ IsoHeader.prototype.initialize = function (){
 
 IsoHeader.prototype.fromBytes = function(bytesIso) {
 	if (!bytesIso) {
-		throw new Error("byteIso is null");
+		throw new Error("ERROR byteIso is null");
 	}
 	var isoHeader = this;
 	var bytesFormatId = new DataView(bytesIso,0,4); 

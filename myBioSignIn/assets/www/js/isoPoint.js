@@ -80,25 +80,42 @@ IsoPoint.prototype.fromBytes = function (bytesIso,signRep) {
 
 function addIsoPoint(point) {
 	var isoPoint = new IsoPoint();
-	//  11.7 pixels/mm
-	isoPoint.properties.put(channel.X,Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X));
+	// X 
+	var valueX = Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X);
+	if(checkRangeValue(valueX, channel.X)){
+		isoPoint.properties.put(channel.X,valueX);
+	}
 	// Y, ISO convention upwards (Android convention downwards)
-	isoPoint.properties.put(channel.Y,Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y));
-	isoPoint.properties.put(channel.F,Math.round(tabletUnitToNewton(point.pressure)*scaling.F));
+	var valueY = Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y);
+	if(checkRangeValue(valueY, channel.Y)){
+		isoPoint.properties.put(channel.Y,valueY);
+	}
+	// F
+	if(point.pressure < 0 || point.pressure > 1){
+		throw new Error ("Force value not valid!");
+		var valueF = 0;
+	} else {
+		var valueF = Math.round(tabletUnitToNewton(point.pressure)*scaling.F);
+		if(checkRangeValue(valueF, channel.F)){
+			isoPoint.properties.put(channel.F,valueF);
+		}
+	}
+	
+	// T
 	var firstTime = biosignin.isoSignatureRep.getFirstPointTime();
 	if(firstTime == 0){
 		isoPoint.properties.put(channel.T,0);
 		biosignin.isoSignatureRep.setFirstPointTime(point.time);
 	}else {
-		if(Math.round((point.time - firstTime)/1000*scaling.T) > 65535){
+		var valueT = Math.round((point.time - firstTime)/1000*scaling.T)
+		if( valueT > 65535){
 			alert("Hai impiegato troppo tempo per firmare, ricomincia!");
 			biosignin.clearSignature();
 		}else{
-			isoPoint.properties.put(channel.T,Math.round((point.time - firstTime)/1000*scaling.T));
+			isoPoint.properties.put(channel.T,valueT);
 		}
 	}
 	biosignin.isoSignatureRep.points.push(isoPoint);
-	console.log(isoPoint.properties.get(channel.T));
 };
 
 function createPoint(e) {
@@ -110,7 +127,7 @@ function createPoint(e) {
 function tabletUnitToNewton(value){
 	if(value <= 0.988){
 		//empirical force function
-		return 0,0217800303*Math.exp(4.5880838131*value).toFixed(3);
+		return 0.0217800303*Math.exp(4.5880838131*value).toFixed(3);
 	}else {
 		if(value <= 0.996){
 			//linear interpolation 
@@ -121,3 +138,17 @@ function tabletUnitToNewton(value){
 		}
 	}
 };
+// Check ISO range size
+function checkRangeValue(value, channel){
+	if(value < channel.minValue || value > channel.maxValue){
+		throw new Error("The value of "+channel+" : "+value+" is outside range["+channel.minValue+";"+channel.maxValue+"]");
+		return false;
+	}
+	var channelDescr = biosignin.isoSignatureRep.channels.get(channel);
+	if(value < channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE) ||
+			value > channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)){
+		throw new Error("The value of "+channel+" : "+value+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");
+		return false;
+	}
+	return true;
+}

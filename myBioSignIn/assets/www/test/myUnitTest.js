@@ -111,36 +111,102 @@ test("Test iso signature bytes", function() {
 	equal(view.getUint16(0), 1, "The channel.F value is: 1");
 });
 
-var realIsoHeader, realIsoBody, realBufferBody, realBufferHeader,realBufferPoint,realIsoPoint;
+var realIsoHeader, realIsoBody, realBufferBody, realBufferHeader,realBufferPoint,realIsoPoint,isoSignatureRep;
 module("TEST REAL SIGNATURE", {
 	setup : function() {
-		isoSignRep = new SignatureRepresentation();
-		// add one real point
-		var realPoint = new Point(400, 600, 0.888474775847872, 9820);
-		realIsoPoint = new IsoPoint();
-		realIsoPoint.properties.put(channel.X, Math.round(realPoint.x / 11.7
-				* scaling.X));
-		realIsoPoint.properties.put(channel.Y, Math.round(realPoint.y / 11.7
-				* scaling.Y));
-		realIsoPoint.properties.put(channel.F, Math.round(realPoint.pressure
-				* scaling.F));
-		var firstTime = isoSignRep.getFirstPointTime();
-		if (firstTime == 0) {
-			realIsoPoint.properties.put(channel.T, realPoint.time);
-			isoSignRep.setFirstPointTime(realPoint.time);
-		} else {
-			realIsoPoint.properties.put(channel.T, realPoint.time - firstTime);
+		isoSignatureRep = new SignatureRepresentation();
+		isoSignatureRep.initializeChannels();
+		
+		function checkRangeValue(value, channel){
+			/*if(value < channel.minValue || value > channel.maxValue){
+				throw new Error("The value of "+channel+" : "+value+" is outside range["+channel.minValue+";"+channel.maxValue+"]");
+				return false;
+			}*/
+			var channelDescr = isoSignatureRep.channels.get(channel);
+			if(value < channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE) ||
+					value > channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)){
+				throw new Error("The value of "+channel+" : "+value+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");
+				return false;
+			}
+			return true;
 		}
-		isoSignRep.points.push(realIsoPoint);
+		
+		// add first real point
+		var point = new Point(400, 600, 0.996474775847872, 9820);
 
+		realIsoPoint = new IsoPoint();
+		var valueX = Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X);
+		if(checkRangeValue(valueX, channel.X)){
+			realIsoPoint.properties.put(channel.X,valueX);
+		}
+		var valueY = Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y);
+		if(checkRangeValue(valueY, channel.Y)){
+			realIsoPoint.properties.put(channel.Y,valueY);
+		}
+		if(point.pressure < 0 || point.pressure > 1){
+			throw new Error ("Force value not valid!"); 
+			var valueF = 0;
+		} else {
+			var valueF = Math.round(tabletUnitToNewton(point.pressure)*scaling.F);
+			if(checkRangeValue(valueF, channel.F)){
+				realIsoPoint.properties.put(channel.F,valueF);
+			}
+		}
+		var firstTime = isoSignatureRep.getFirstPointTime();
+		if (firstTime == 0) {
+			realIsoPoint.properties.put(channel.T,0);
+			isoSignatureRep.setFirstPointTime(point.time);
+		} else {
+			if(Math.round((point.time - firstTime)/1000*scaling.T) > 65535){
+				throw new Error("Hai impiegato troppo tempo per firmare, ricomincia!");
+			} else {
+				realIsoPoint.properties.put(channel.T,Math.round((point.time - firstTime)/1000*scaling.T));
+			}
+		}
+		isoSignatureRep.points.push(realIsoPoint);
+
+		
+		// add second real point
+		point = new Point(560, 1600, 0.776474775847872, 9850);
+
+		realIsoPoint2 = new IsoPoint();
+		var valueX = Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X);
+		if(checkRangeValue(valueX, channel.X)){
+			realIsoPoint2.properties.put(channel.X,valueX);
+		}
+		var valueY = Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y);
+		if(checkRangeValue(valueY, channel.Y)){
+			realIsoPoint2.properties.put(channel.Y,valueY);
+		}
+		if(point.pressure < 0 || point.pressure > 1){
+			throw new Error ("Force value not valid!");
+			var valueF = 0;
+		} else {
+			var valueF = Math.round(tabletUnitToNewton(point.pressure)*scaling.F);
+			if(checkRangeValue(valueF, channel.F)){
+				realIsoPoint2.properties.put(channel.F,valueF);
+			}
+		}
+		var firstTime = isoSignatureRep.getFirstPointTime();
+		if (firstTime == 0) {
+			realIsoPoint2.properties.put(channel.T,0);
+			isoSignatureRep.setFirstPointTime(point.time);
+		} else {
+			if(Math.round((point.time - firstTime)/1000*scaling.T) > 65535){
+				throw new Error("Hai impiegato troppo tempo per firmare, ricomincia!");
+			} else {
+				realIsoPoint2.properties.put(channel.T,Math.round((point.time - firstTime)/1000*scaling.T));
+			}
+		}
+		isoSignatureRep.points.push(realIsoPoint2);
+		
 		// create iso bytes
 		realIsoHeader = new IsoHeader();
 		realIsoBody = new IsoBody();
-		isoSignRep.initializeChannels();
-		realIsoBody.representations.push(isoSignRep);
-		realBufferBody = isoSignRep.toBytes();
+		realIsoBody.representations.push(isoSignatureRep);
+		realBufferBody = isoSignatureRep.toBytes();
 		realBufferHeader = realIsoHeader.toBytes(realBufferBody.byteLength);
-		realBufferPoint = realIsoPoint.toBytes();
+	
 	},
 	teardown : function() {
 
@@ -169,21 +235,45 @@ test("Test header fromBytes", function() {
 test("Test signature fromBytes", function() {
 	var isoSignFromBytes = new SignatureRepresentation();
 		isoSignFromBytes.fromBytes(realBufferBody); 
-	//test point channel values
-	var isoPointsFromBytes = new IsoPoint();
-	isoPointsFromBytes.fromBytes(realBufferPoint,isoSignFromBytes);
-	equal(isoPointsFromBytes.properties.get(channel.X),realIsoPoint.properties.get(channel.X),"Channel X of iso point is the same");
-	equal(isoPointsFromBytes.properties.get(channel.Y),realIsoPoint.properties.get(channel.Y),"Channel Y of iso point is the same");
-	equal(isoPointsFromBytes.properties.get(channel.F),realIsoPoint.properties.get(channel.F),"Channel F of iso point is the same");
-	equal(isoPointsFromBytes.properties.get(channel.T),realIsoPoint.properties.get(channel.T),"Channel T of iso point is the same");
+	//Test point channel values
+	equal(isoSignFromBytes.points.length, 2, "The number of sample points is : 2");
 	
-	//test channels description
+	//Test first point value
+	equal(isoSignFromBytes.points[0].properties.get(channel.X),realIsoPoint.properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.X));
+	equal(isoSignFromBytes.points[0].properties.get(channel.Y),realIsoPoint.properties.get(channel.Y),"Channel Y of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.Y));
+	equal(isoSignFromBytes.points[0].properties.get(channel.F),realIsoPoint.properties.get(channel.F),"Channel F of iso point is the same:"+isoSignFromBytes.points[0].properties.get(channel.F));
+	equal(isoSignFromBytes.points[0].properties.get(channel.T),realIsoPoint.properties.get(channel.T),"Channel T of iso point is the same:"+isoSignFromBytes.points[0].properties.get(channel.T));
+	
+	//Test second point value
+	equal(isoSignFromBytes.points[1].properties.get(channel.X),realIsoPoint2.properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.X));
+	equal(isoSignFromBytes.points[1].properties.get(channel.Y),realIsoPoint2.properties.get(channel.Y),"Channel Y of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.Y));
+	equal(isoSignFromBytes.points[1].properties.get(channel.F),realIsoPoint2.properties.get(channel.F),"Channel F of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.F));
+	equal(isoSignFromBytes.points[1].properties.get(channel.T),realIsoPoint2.properties.get(channel.T),"Channel T of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.T));
+	
+	//Test channels description
 	var descrXFromBytes = isoSignFromBytes.channels.get(channel.X);
-	var descrX = isoSignRep.channels.get(channel.X);
+	var descrYFromBytes = isoSignFromBytes.channels.get(channel.Y);
+	var descrFFromBytes = isoSignFromBytes.channels.get(channel.F);
+	var descrTFromBytes = isoSignFromBytes.channels.get(channel.T);
+	var descrX = isoSignatureRep.channels.get(channel.X);
+	var descrY = isoSignatureRep.channels.get(channel.Y);
+	var descrF = isoSignatureRep.channels.get(channel.F);
+	var descrT = isoSignatureRep.channels.get(channel.T);
 	equal(descrXFromBytes.attributes.get(channelAttributes.SCALING_VALUE),descrX.attributes.get(channelAttributes.SCALING_VALUE),"Channel X SCALING_VALUE is the same: "+descrX.attributes.get(channelAttributes.SCALING_VALUE));
 	equal(descrXFromBytes.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),descrX.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),"Channel X MAXIMUM_CHANNEL_VALUE is the same: "+descrX.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE));
 	equal(descrXFromBytes.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),descrX.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),"Channel X MINIMUM_CHANNEL_VALUE is the same: "+descrX.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE));
+	equal(descrYFromBytes.attributes.get(channelAttributes.SCALING_VALUE),descrY.attributes.get(channelAttributes.SCALING_VALUE),"Channel Y SCALING_VALUE is the same: "+descrY.attributes.get(channelAttributes.SCALING_VALUE));
+	equal(descrYFromBytes.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),descrY.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),"Channel Y MAXIMUM_CHANNEL_VALUE is the same: "+descrY.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE));
+	equal(descrYFromBytes.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),descrY.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),"Channel Y MINIMUM_CHANNEL_VALUE is the same: "+descrY.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE));
+	equal(descrFFromBytes.attributes.get(channelAttributes.SCALING_VALUE),descrF.attributes.get(channelAttributes.SCALING_VALUE),"Channel F SCALING_VALUE is the same: "+descrF.attributes.get(channelAttributes.SCALING_VALUE));
+	equal(descrFFromBytes.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),descrF.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),"Channel F MAXIMUM_CHANNEL_VALUE is the same: "+descrF.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE));
+	equal(descrFFromBytes.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),descrF.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),"Channel F MINIMUM_CHANNEL_VALUE is the same: "+descrF.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE));
+	equal(descrTFromBytes.attributes.get(channelAttributes.SCALING_VALUE),descrT.attributes.get(channelAttributes.SCALING_VALUE),"Channel T SCALING_VALUE is the same: "+descrT.attributes.get(channelAttributes.SCALING_VALUE));
+	equal(descrTFromBytes.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),descrT.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE),"Channel T MAXIMUM_CHANNEL_VALUE is the same: "+descrT.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE));
+	equal(descrTFromBytes.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),descrT.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE),"Channel T MINIMUM_CHANNEL_VALUE is the same: "+descrT.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE));
 	//test channels
-	equal(isoSignFromBytes.channels.size(),isoSignRep.channels.size(),"The signature has the same "+isoSignRep.channels.size()+" channels");
+	equal(isoSignFromBytes.channels.size(),isoSignatureRep.channels.size(),"The signature has "+isoSignatureRep.channels.size()+" channels");
 
 });
+
+//TODO aggiungere casi limite
