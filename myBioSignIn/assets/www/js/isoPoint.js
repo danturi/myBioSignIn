@@ -109,7 +109,8 @@ function addIsoPoint(point,isoRep) {
 	}else {
 		var valueT = Math.round((point.time - firstTime)/1000*scaling.T)
 		if( valueT > 65535){
-			alert("Hai impiegato troppo tempo per firmare, ricomincia!");
+			//alert("Hai impiegato troppo tempo per firmare, ricomincia!");
+			throw new Error ("Time value too big");
 			//biosignin.clearSignature();
 		}else{
 			isoPoint.properties.put(channel.T,valueT);
@@ -142,13 +143,11 @@ function tabletUnitToNewton(value){
 function checkRangeValue(value, channel, isoRep){
 	if(value < channel.minValue || value > channel.maxValue){
 		throw new Error("The value of "+channel+" : "+value+" is outside range["+channel.minValue+";"+channel.maxValue+"]");
-		return false;
 	}
 	var channelDescr = isoRep.channels.get(channel);
 	if(value < channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE) ||
 			value > channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)){
 		throw new Error("The value of "+channel+" : "+value+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");
-		return false;
 	}
 	return true;
 }

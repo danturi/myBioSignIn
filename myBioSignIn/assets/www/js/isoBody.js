@@ -117,22 +117,22 @@ SignatureRepresentation.prototype.fromBytes = function(bytesIso) {
 	//TODO Date ISO
 	
 	view = new DataView(bytesIso,13,1);
-	if(!view.getUint8(0) == 0x01){
+	if(!(view.getUint8(0) == 0x01)){
 		throw Error("Error different device tech id");
 	}
 	
 	view = new DataView(bytesIso,14,2);
-	if(!view.getUint16(0) == 0){
+	if(!(view.getUint16(0) == 0)){
 		throw Error("Error different device vendor id");
 	}
 	
 	view = new DataView(bytesIso,16,2);
-	if(!view.getUint16(0) == 0){
+	if(!(view.getUint16(0) == 0)){
 		throw Error("Error different device type id");
 	}
 	
 	view = new DataView(bytesIso,18,1);
-	if(!view.getUint8(0) == 0){
+	if(!(view.getUint8(0) == 0)){
 		throw Error("There is quality block!");
 	}
 	

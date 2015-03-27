@@ -6,7 +6,7 @@ var isoHeader, bufferHeader;
 module("TEST HEADER", {
 	setup : function() {
 		isoHeader = new IsoHeader();
-		bufferHeader = isoHeader.toBytes(0);
+		bufferHeader = isoHeader.toBytes(1);
 	},
 	teardown : function() {
 
@@ -20,7 +20,7 @@ test("Test iso header bytes ", function() {
 	equal(view.getUint32(0), 0x30323000,
 			"The full format version is: 0x30323000");
 	var view = new DataView(bufferHeader, 8, 4);
-	equal(view.getUint32(0), 15, "The full format record length is: 15");
+	equal(view.getUint32(0), 16, "The full format record length is: 15");
 	var view = new DataView(bufferHeader, 12, 2);
 	equal(view.getUint16(0), 1,
 			"The full format number of representation is: 1");
@@ -123,91 +123,11 @@ module("TEST REAL SIGNATURE", {
 		// add second real point
 		point = new Point(560, 1600, 0.776474775847872, 9850);
 		addIsoPoint(point,isoSignatureRep);
-		/*
-		function checkRangeValue(value, channel){
-			/*if(value < channel.minValue || value > channel.maxValue){
-				throw new Error("The value of "+channel+" : "+value+" is outside range["+channel.minValue+";"+channel.maxValue+"]");
-				return false;
-			}*/
-		/*
-			var channelDescr = isoSignatureRep.channels.get(channel);
-			if(value < channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE) ||
-					value > channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)){
-				throw new Error("The value of "+channel+" : "+value+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");
-				return false;
-			}
-			return true;
-		}
+		// add third real point
+		point = new Point(560, 1600, 0.995, 9890);
+		addIsoPoint(point,isoSignatureRep);
 		
-		// add first real point
-		var point = new Point(400, 600, 0.996474775847872, 9820);
-
-		realIsoPoint = new IsoPoint();
-		var valueX = Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X);
-		if(checkRangeValue(valueX, channel.X)){
-			realIsoPoint.properties.put(channel.X,valueX);
-		}
-		var valueY = Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y);
-		if(checkRangeValue(valueY, channel.Y)){
-			realIsoPoint.properties.put(channel.Y,valueY);
-		}
-		if(point.pressure < 0 || point.pressure > 1){
-			throw new Error ("Force value not valid!"); 
-			var valueF = 0;
-		} else {
-			var valueF = Math.round(tabletUnitToNewton(point.pressure)*scaling.F);
-			if(checkRangeValue(valueF, channel.F)){
-				realIsoPoint.properties.put(channel.F,valueF);
-			}
-		}
-		var firstTime = isoSignatureRep.getFirstPointTime();
-		if (firstTime == 0) {
-			realIsoPoint.properties.put(channel.T,0);
-			isoSignatureRep.setFirstPointTime(point.time);
-		} else {
-			if(Math.round((point.time - firstTime)/1000*scaling.T) > 65535){
-				throw new Error("Hai impiegato troppo tempo per firmare, ricomincia!");
-			} else {
-				realIsoPoint.properties.put(channel.T,Math.round((point.time - firstTime)/1000*scaling.T));
-			}
-		}
-		isoSignatureRep.points.push(realIsoPoint);
-
 		
-		// add second real point
-		point = new Point(560, 1600, 0.776474775847872, 9850);
-
-		realIsoPoint2 = new IsoPoint();
-		var valueX = Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X);
-		if(checkRangeValue(valueX, channel.X)){
-			realIsoPoint2.properties.put(channel.X,valueX);
-		}
-		var valueY = Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y);
-		if(checkRangeValue(valueY, channel.Y)){
-			realIsoPoint2.properties.put(channel.Y,valueY);
-		}
-		if(point.pressure < 0 || point.pressure > 1){
-			throw new Error ("Force value not valid!");
-			var valueF = 0;
-		} else {
-			var valueF = Math.round(tabletUnitToNewton(point.pressure)*scaling.F);
-			if(checkRangeValue(valueF, channel.F)){
-				realIsoPoint2.properties.put(channel.F,valueF);
-			}
-		}
-		var firstTime = isoSignatureRep.getFirstPointTime();
-		if (firstTime == 0) {
-			realIsoPoint2.properties.put(channel.T,0);
-			isoSignatureRep.setFirstPointTime(point.time);
-		} else {
-			if(Math.round((point.time - firstTime)/1000*scaling.T) > 65535){
-				throw new Error("Hai impiegato troppo tempo per firmare, ricomincia!");
-			} else {
-				realIsoPoint2.properties.put(channel.T,Math.round((point.time - firstTime)/1000*scaling.T));
-			}
-		}
-		isoSignatureRep.points.push(realIsoPoint2);
-		*/
 		// create iso bytes
 		realIsoHeader = new IsoHeader();
 		realIsoBody = new IsoBody();
@@ -244,7 +164,7 @@ test("Test signature fromBytes", function() {
 	var isoSignFromBytes = new SignatureRepresentation();
 		isoSignFromBytes.fromBytes(realBufferBody); 
 	//Test point channel values
-	equal(isoSignFromBytes.points.length, 2, "The number of sample points is : 2");
+	equal(isoSignFromBytes.points.length, 3, "The number of sample points is : 3");
 	
 	//Test first point value
 	equal(isoSignFromBytes.points[0].properties.get(channel.X),isoSignatureRep.points[0].properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.X));
@@ -284,4 +204,156 @@ test("Test signature fromBytes", function() {
 
 });
 
-//TODO aggiungere casi limite
+module("TEST FAIL SIGNATURE", {
+	setup : function() {
+		isoSignatureRep = new SignatureRepresentation();
+		isoSignatureRep.initializeChannels();
+		
+		// create iso bytes
+		realIsoHeader = new IsoHeader();
+		realIsoBody = new IsoBody();
+	
+	},
+	teardown : function() {
+
+	}
+});
+test("Test header fail", function() {
+	//Header without bodyLenght
+	try{
+		realBufferHeader = realIsoHeader.toBytes();
+	}catch (error){
+		equal(error.message, "Unexpected body length", "Throw Error in Header without bodyLenght");
+	}
+	//Header with wrong format ID
+	var buffer = realIsoHeader.toBytes(realBufferBody.byteLength);
+	var header = new IsoHeader();
+	var view = new DataView(buffer, 0, 4);
+	view.setUint32(0,0x33444900,false);
+	try {
+		header.fromBytes(buffer);
+	} catch (error){
+		equal(error.message, "Unexpected format identifier", "Throw Error in Header with wrong format ID");
+	}
+	//Header with wrong version ID
+	var buffer = realIsoHeader.toBytes(realBufferBody.byteLength);
+	var header = new IsoHeader();
+	var view = new DataView(buffer, 4, 4);
+	view.setUint32(0,0x534900,false);
+	try {
+		header.fromBytes(buffer);
+	} catch (error){
+		equal(error.message, "Unexpected version number", "Throw Error in Header with wrong version ID");
+	}
+	//Header fromByte with null parameter
+	var header = new IsoHeader();
+	try {
+		header.fromBytes();
+	} catch (error){
+		equal(error.message, "ERROR byteIso is null", "Throw Error in Header fromByte with null parameter");
+	}
+});
+
+test("Test point value fail", function() {
+	// add Point with not valid X (MIN)
+	var point = new Point(-400, 600, 0.996474775847872, 9820);
+	var channelDescr = isoSignatureRep.channels.get(channel.X);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		//equal(error.message, "The value of "+channel.X+" : -3419"+" is outside range["+channel.X.minValue+";"+channel.X.maxValue+"]")
+		equal(error.message, "The value of "+channel.X+" : -3419"+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]","The value of "+channel.X+" : -3419"+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");
+	}
+	// add Point with not valid X (MIN second condition)
+	var point = new Point(-64400, 600, 0.996474775847872, 9820);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		equal(error.message, "The value of "+channel.X+" : -550427"+" is outside range["+channel.X.minValue+";"+channel.X.maxValue+"]","The value of "+channel.X+" : -550427"+" is outside range["+channel.X.minValue+";"+channel.X.maxValue+"]")
+	}
+	// add Point with not valid X (MAX)
+	var point = new Point(3000, 600, 0.996474775847872, 9820);
+	var channelDescr = isoSignatureRep.channels.get(channel.X);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		//equal(error.message, "The value of "+channel.X+" : -3419"+" is outside range["+channel.X.minValue+";"+channel.X.maxValue+"]")
+		equal(error.message, "The value of "+channel.X+" : 25641"+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]","The value of "+channel.X+" : 25641"+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");
+	}
+	// add Point with not valid X (MAX second condition)
+	var point = new Point(64400, 600, 0.996474775847872, 9820);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		equal(error.message, "The value of "+channel.X+" : 550427"+" is outside range["+channel.X.minValue+";"+channel.X.maxValue+"]","The value of "+channel.X+" : 550427"+" is outside range["+channel.X.minValue+";"+channel.X.maxValue+"]")
+	}
+	
+	// add Point with not valid F
+	var point = new Point(400, 600, 2, 9820);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		equal(error.message, "Force value not valid!","Force value not valid: "+point.pressure);
+	}
+	// add Point with not valid F
+	var point = new Point(400, 600, -2, 9820);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		equal(error.message, "Force value not valid!","Force value not valid: "+point.pressure);
+	}
+	// add Point with not valid T
+	isoSignatureRep.setFirstPointTime(22);
+	var point = new Point(400, 600, 1, 112982982982);
+	try{
+		addIsoPoint(point,isoSignatureRep);
+	}catch (error){
+		equal(error.message, "Time value too big","Time not valid: "+point.time);
+	}
+});
+test("Test body fail", function() {
+	// add first real point
+	var point = new Point(400, 600, 0.996474775847872, 9820);
+	addIsoPoint(point,isoSignatureRep);
+	// add second real point
+	point = new Point(560, 1600, 0.776474775847872, 9850);
+	addIsoPoint(point,isoSignatureRep);
+	
+	realIsoBody.representations.push(isoSignatureRep);
+	var buffer = isoSignatureRep.toBytes();
+	//Body with different tech ID
+	var view = new DataView(buffer, 13, 1);
+	view.setUint8(0,0x11,false);
+	try {
+		isoSignatureRep.fromBytes(buffer);
+	} catch (error){
+		equal(error.message, "Error different device tech id", "Throw Error in Body with different tech ID");
+	}
+	//Body with different device vendor ID
+	var buffer = isoSignatureRep.toBytes();
+	var view = new DataView(buffer, 14, 2);
+	view.setUint16(0,0x11,false);
+	try {
+		isoSignatureRep.fromBytes(buffer);
+	} catch (error){
+		equal(error.message, "Error different device vendor id", "Throw Error in Body with different device vendor id");
+	}
+	//Body with different device type ID
+	var buffer = isoSignatureRep.toBytes();
+	var view = new DataView(buffer, 16, 2);
+	view.setUint16(0,0x11,false);
+	try {
+		isoSignatureRep.fromBytes(buffer);
+	} catch (error){
+		equal(error.message, "Error different device type id", "Throw Error in Body with different device type id");
+	}
+	//Body with quality block
+	var buffer = isoSignatureRep.toBytes();
+	var view = new DataView(buffer, 18, 1);
+	view.setUint8(0,0x11,false);
+	try {
+		isoSignatureRep.fromBytes(buffer);
+	} catch (error){
+		equal(error.message, "There is quality block!", "Throw Error in Body with presence of quality block");
+	}
+});

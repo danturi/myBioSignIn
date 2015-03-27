@@ -31,7 +31,7 @@ var biosignin = {
 			touch.innerHTML = event.pressure;
 			// signaturePad._handleTouchStart(event);
 			biosignin.signatureCapture.down(event);
-			createPoint(event,isoSignatureRep);
+			createPoint(event,biosignin.isoSignatureRep);
 
 		});
 		document.addEventListener("ACTION_MOVE", function(event) {
@@ -39,7 +39,7 @@ var biosignin = {
 			touch.innerHTML = event.pressure;
 			// signaturePad._handleTouchMove(event);
 			biosignin.signatureCapture.move(event);
-			createPoint(event,isoSignatureRep);
+			createPoint(event,biosignin.isoSignatureRep);
 		});
 		document.addEventListener("ACTION_UP", function(event) {
 			event.preventDefault();
