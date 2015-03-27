@@ -78,16 +78,16 @@ IsoPoint.prototype.fromBytes = function (bytesIso,signRep) {
 };
 
 
-function addIsoPoint(point) {
+function addIsoPoint(point,isoRep) {
 	var isoPoint = new IsoPoint();
 	// X 
 	var valueX = Math.round(point.x / deviceConstants.pixelToMillimeters * scaling.X);
-	if(checkRangeValue(valueX, channel.X)){
+	if(checkRangeValue(valueX, channel.X, isoRep)){
 		isoPoint.properties.put(channel.X,valueX);
 	}
 	// Y, ISO convention upwards (Android convention downwards)
 	var valueY = Math.round((deviceConstants.maxY - point.y)/ deviceConstants.pixelToMillimeters * scaling.Y);
-	if(checkRangeValue(valueY, channel.Y)){
+	if(checkRangeValue(valueY, channel.Y, isoRep)){
 		isoPoint.properties.put(channel.Y,valueY);
 	}
 	// F
@@ -96,32 +96,32 @@ function addIsoPoint(point) {
 		var valueF = 0;
 	} else {
 		var valueF = Math.round(tabletUnitToNewton(point.pressure)*scaling.F);
-		if(checkRangeValue(valueF, channel.F)){
+		if(checkRangeValue(valueF, channel.F, isoRep)){
 			isoPoint.properties.put(channel.F,valueF);
 		}
 	}
 	
 	// T
-	var firstTime = biosignin.isoSignatureRep.getFirstPointTime();
+	var firstTime = isoRep.getFirstPointTime();
 	if(firstTime == 0){
 		isoPoint.properties.put(channel.T,0);
-		biosignin.isoSignatureRep.setFirstPointTime(point.time);
+		isoRep.setFirstPointTime(point.time);
 	}else {
 		var valueT = Math.round((point.time - firstTime)/1000*scaling.T)
 		if( valueT > 65535){
 			alert("Hai impiegato troppo tempo per firmare, ricomincia!");
-			biosignin.clearSignature();
+			//biosignin.clearSignature();
 		}else{
 			isoPoint.properties.put(channel.T,valueT);
 		}
 	}
-	biosignin.isoSignatureRep.points.push(isoPoint);
+	isoRep.points.push(isoPoint);
 };
 
-function createPoint(e) {
+function createPoint(e,isoRep) {
 	var point  = new Point(Math.round(e.x / window.devicePixelRatio), Math.round(e.y
 			/ window.devicePixelRatio), e.pressure, e.time);
-	addIsoPoint(point);
+	addIsoPoint(point,isoRep);
 };
 
 function tabletUnitToNewton(value){
@@ -139,12 +139,12 @@ function tabletUnitToNewton(value){
 	}
 };
 // Check ISO range size
-function checkRangeValue(value, channel){
+function checkRangeValue(value, channel, isoRep){
 	if(value < channel.minValue || value > channel.maxValue){
 		throw new Error("The value of "+channel+" : "+value+" is outside range["+channel.minValue+";"+channel.maxValue+"]");
 		return false;
 	}
-	var channelDescr = biosignin.isoSignatureRep.channels.get(channel);
+	var channelDescr = isoRep.channels.get(channel);
 	if(value < channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE) ||
 			value > channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)){
 		throw new Error("The value of "+channel+" : "+value+" is outside range["+channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE)+";"+channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)+"]");

@@ -117,11 +117,19 @@ module("TEST REAL SIGNATURE", {
 		isoSignatureRep = new SignatureRepresentation();
 		isoSignatureRep.initializeChannels();
 		
+		// add first real point
+		var point = new Point(400, 600, 0.996474775847872, 9820);
+		addIsoPoint(point,isoSignatureRep);
+		// add second real point
+		point = new Point(560, 1600, 0.776474775847872, 9850);
+		addIsoPoint(point,isoSignatureRep);
+		/*
 		function checkRangeValue(value, channel){
 			/*if(value < channel.minValue || value > channel.maxValue){
 				throw new Error("The value of "+channel+" : "+value+" is outside range["+channel.minValue+";"+channel.maxValue+"]");
 				return false;
 			}*/
+		/*
 			var channelDescr = isoSignatureRep.channels.get(channel);
 			if(value < channelDescr.attributes.get(channelAttributes.MINIMUM_CHANNEL_VALUE) ||
 					value > channelDescr.attributes.get(channelAttributes.MAXIMUM_CHANNEL_VALUE)){
@@ -199,7 +207,7 @@ module("TEST REAL SIGNATURE", {
 			}
 		}
 		isoSignatureRep.points.push(realIsoPoint2);
-		
+		*/
 		// create iso bytes
 		realIsoHeader = new IsoHeader();
 		realIsoBody = new IsoBody();
@@ -239,16 +247,16 @@ test("Test signature fromBytes", function() {
 	equal(isoSignFromBytes.points.length, 2, "The number of sample points is : 2");
 	
 	//Test first point value
-	equal(isoSignFromBytes.points[0].properties.get(channel.X),realIsoPoint.properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.X));
-	equal(isoSignFromBytes.points[0].properties.get(channel.Y),realIsoPoint.properties.get(channel.Y),"Channel Y of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.Y));
-	equal(isoSignFromBytes.points[0].properties.get(channel.F),realIsoPoint.properties.get(channel.F),"Channel F of iso point is the same:"+isoSignFromBytes.points[0].properties.get(channel.F));
-	equal(isoSignFromBytes.points[0].properties.get(channel.T),realIsoPoint.properties.get(channel.T),"Channel T of iso point is the same:"+isoSignFromBytes.points[0].properties.get(channel.T));
+	equal(isoSignFromBytes.points[0].properties.get(channel.X),isoSignatureRep.points[0].properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.X));
+	equal(isoSignFromBytes.points[0].properties.get(channel.Y),isoSignatureRep.points[0].properties.get(channel.Y),"Channel Y of iso point is the same: "+isoSignFromBytes.points[0].properties.get(channel.Y));
+	equal(isoSignFromBytes.points[0].properties.get(channel.F),isoSignatureRep.points[0].properties.get(channel.F),"Channel F of iso point is the same:"+isoSignFromBytes.points[0].properties.get(channel.F));
+	equal(isoSignFromBytes.points[0].properties.get(channel.T),isoSignatureRep.points[0].properties.get(channel.T),"Channel T of iso point is the same:"+isoSignFromBytes.points[0].properties.get(channel.T));
 	
 	//Test second point value
-	equal(isoSignFromBytes.points[1].properties.get(channel.X),realIsoPoint2.properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.X));
-	equal(isoSignFromBytes.points[1].properties.get(channel.Y),realIsoPoint2.properties.get(channel.Y),"Channel Y of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.Y));
-	equal(isoSignFromBytes.points[1].properties.get(channel.F),realIsoPoint2.properties.get(channel.F),"Channel F of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.F));
-	equal(isoSignFromBytes.points[1].properties.get(channel.T),realIsoPoint2.properties.get(channel.T),"Channel T of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.T));
+	equal(isoSignFromBytes.points[1].properties.get(channel.X),isoSignatureRep.points[1].properties.get(channel.X),"Channel X of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.X));
+	equal(isoSignFromBytes.points[1].properties.get(channel.Y),isoSignatureRep.points[1].properties.get(channel.Y),"Channel Y of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.Y));
+	equal(isoSignFromBytes.points[1].properties.get(channel.F),isoSignatureRep.points[1].properties.get(channel.F),"Channel F of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.F));
+	equal(isoSignFromBytes.points[1].properties.get(channel.T),isoSignatureRep.points[1].properties.get(channel.T),"Channel T of iso point is the same: "+isoSignFromBytes.points[1].properties.get(channel.T));
 	
 	//Test channels description
 	var descrXFromBytes = isoSignFromBytes.channels.get(channel.X);
